@@ -1058,7 +1058,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsib2F1dGgyLXJlc291cmNlIl0sInVzZXJfbmFtZSI6InBlbmdndW5hQGV4YW1wbGUuY29tIiwic2NvcGUiOlsicmVhZCIsIndyaXRlIl0sImlkIjoxOCwiZXhwIjoxNzA0NzYyOTI5LCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwianRpIjoiYWk5U3NCQm5ROHNFVWhkUktBWk12WC1mR0w4IiwiY2xpZW50X2lkIjoibXktY2xpZW50LXdlYiJ9.FLta_cEA5jNjDJ0wR3uajfKRGBUVAXblvwXsjF0YNpA"
+								"token": "{{TOKEN}}"
 							}
 						},
 						"method": "PUT",
