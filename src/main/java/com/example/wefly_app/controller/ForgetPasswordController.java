@@ -66,16 +66,16 @@ public class ForgetPasswordController {
             found.setOtpExpiredDate(expirationDate);
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", otp);
             template = template.replaceAll("\\{\\{USERNAME}}", (found.getUsername() == null ? "" +
-                    "@UserName"
+                    "UserName"
                     :
-                    "@" + found.getUsername()));
+                    found.getUsername()));
 
             userRepository.save(found);
         } else {
             template = template.replaceAll("\\{\\{USERNAME}}", (found.getUsername() == null ? "" +
-                    "@UserName"
+                    "UserName"
                     :
-                    "@" + found.getUsername()));
+                    found.getUsername()));
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", found.getOtp());
         }
         emailSender.sendAsync(found.getUsername(), "Chute - Forget Password", template);

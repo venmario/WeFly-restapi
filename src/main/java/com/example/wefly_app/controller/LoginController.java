@@ -140,7 +140,7 @@ public class LoginController {
             registerModel.setFullName(profile.getName());
             registerModel.setUsername(profile.getEmail());
             registerModel.setPassword(pass);
-            registerController.saveRegisterByGoogle(registerModel);
+            serviceReq.registerByGoogle(registerModel);
             user = userRepository.findOneByUsername(profile.getEmail());
             log.info("register success!");
         }

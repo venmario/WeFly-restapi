@@ -56,20 +56,20 @@ public class RegisterController {
         return new ResponseEntity<Map>(map, HttpStatus.OK);
     }
 
-    @PostMapping("/register-google")
-    public ResponseEntity<Map> saveRegisterByGoogle(@Valid @RequestBody RegisterGoogleModel objModel) throws RuntimeException {
-        Map map = new HashMap();
-
-        User user = userRepository.checkExistingEmail(objModel.getUsername());
-        if (null != user) {
-            return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
-
-        }
-        map = serviceReq.registerByGoogle(objModel);
-//        Map mapRegister =  sendEmailegister(objModel);
-        return new ResponseEntity<Map>(map, HttpStatus.OK);
-
-    }
+//    @PostMapping("/register-google")
+//    public ResponseEntity<Map> saveRegisterByGoogle(@Valid @RequestBody RegisterGoogleModel objModel) throws RuntimeException {
+//        Map map = new HashMap();
+//
+//        User user = userRepository.checkExistingEmail(objModel.getUsername());
+//        if (null != user) {
+//            return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
+//
+//        }
+//        map = serviceReq.registerByGoogle(objModel);
+////        Map mapRegister =  sendEmailegister(objModel);
+//        return new ResponseEntity<Map>(map, HttpStatus.OK);
+//
+//    }
 
     @PostMapping("/send-otp")//send OTP
     public Map sendEmailegister(
