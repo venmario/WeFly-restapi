@@ -13,7 +13,6 @@ import java.util.UUID;
 
 public interface UserService {
     Map registerManual(RegisterModel objModel) ;
-    Map registerMerchant (User request, UUID merchantId);
     Map registerByGoogle(RegisterGoogleModel objModel);
     public Map login(LoginModel objLogin);
     Map<Object, Object> getById(Long id);

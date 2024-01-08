@@ -158,33 +158,11 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    @Transactional
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @Override
-    public Map registerMerchant (User request, UUID merchantId) {
-        Map map = new HashMap();
-        try {
-            Optional<User> checkDataDBUser = userRepository.findById(request.getId());
-            String[] roleNames = {"ROLE_MERCHANT", "ROLE_MERCHANT_P"}; // admin
-            List<Role> r = repoRole.findByNameIn(roleNames);
-            List<Role> existingRole = checkDataDBUser.get().getRoles();
-            existingRole.addAll(r);
-            checkDataDBUser.get().setRoles(existingRole);
-            User obj = repoUser.save(checkDataDBUser.get());
-
-            return templateResponse.success(obj);
-
-        } catch (Exception e) {
-            logger.error("Eror registerManual=", e);
-            return templateResponse.error("eror:"+e);
-        }
-
-    }
     @Override
     public Map registerByGoogle(RegisterGoogleModel objModel) {
         Map map = new HashMap();
         try {
-            String[] roleNames = {"ROLE_USER, ROLE_USER_O, ROLE_USER_OD"};
+            String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"};
             User user = new User();
             user.setUsername(objModel.getUsername().toLowerCase());
             user.setFullName(objModel.getFullName());
@@ -198,8 +176,8 @@ public class UserServiceImpl implements UserService {
             return templateResponse.success(obj);
 
         } catch (Exception e) {
-            logger.error("Error registerManual=", e);
-            return templateResponse.error("eror:"+e);
+            logger.error("Error register with google=", e);
+            return templateResponse.error("error:"+e);
         }
     }
 
@@ -210,11 +188,14 @@ public class UserServiceImpl implements UserService {
             log.info("Update User");
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             Long userId = (Long) attribute.getRequest().getAttribute("userId");
+            System.out.println("userID = " + userId);
+            System.out.println("user name = " + attribute.getRequest().getAttribute("test"));
+            if (userId == null) return templateResponse.error("user id null");
             Optional<User> checkDataDBUser = userRepository.findById(userId);
             if (!checkDataDBUser.isPresent()) return templateResponse.error("unidentified token user");
             if (!request.getFullName().isEmpty()) checkDataDBUser.get().setFullName(request.getFullName());
             if (!request.getCity().isEmpty()) checkDataDBUser.get().setCity(request.getCity());
-//            if (request.getDateOfBirth() != null) checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
+            if (request.getDateOfBirth() != null) checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
 
             log.info("Update User Success");
             return templateResponse.success(userRepository.save(checkDataDBUser.get()));
