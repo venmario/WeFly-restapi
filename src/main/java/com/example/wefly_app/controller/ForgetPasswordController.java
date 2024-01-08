@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -47,10 +44,8 @@ public class ForgetPasswordController {
     // Step 1 : Send OTP
     @PostMapping("/forgot-password")//send OTP//send OTP
     public Map sendEmailPassword(@RequestBody ResetPasswordModel user) {
-        String message = "Thanks, please check your email";
-
-        if (StringUtils.isEmpty(user.getEmail())) return templateResponse.error("No email provided");
-        User found = userRepository.findOneByUsername(user.getEmail());
+        if (StringUtils.isEmpty(user.getUsername())) return templateResponse.error("No username provided");
+        User found = userRepository.findOneByUsername(user.getUsername());
         if (found == null) return templateResponse.error("Email not found"); //throw new BadRequest("Email not found");
 
         String template = emailTemplate.getResetPassword();
@@ -86,24 +81,11 @@ public class ForgetPasswordController {
         emailSender.sendAsync(found.getUsername(), "Chute - Forget Password", template);
 
 
-        return templateResponse.success("success");
+        return templateResponse.success("success, please check your email");
 
     }
 
-    //Step 2 : CHek TOKEN OTP EMAIL
-    @PostMapping("/forgot-password-check-token")
-    public Map cheKTOkenValid(@RequestBody ResetPasswordModel model) {
-        if (model.getOtp() == null) return templateResponse.error("Token is required");
-
-        User user = userRepository.findOneByOTP(model.getOtp());
-        if (user == null) {
-            return templateResponse.error("Token not valid");
-        }
-
-        return templateResponse.success("Success");
-    }
-
-    // Step 3 : lakukan reset password baru
+    // Step 2 : lakukan reset password baru
     @PostMapping("/change-password")
     public Map resetPassword(@RequestBody ResetPasswordModel model) {
         if (model.getOtp() == null) return templateResponse.error("Token is required");
@@ -115,17 +97,32 @@ public class ForgetPasswordController {
         if (!passwordValidatorUtil.validatePassword(model.getNewPassword())) {
             return templateResponse.error(passwordValidatorUtil.getMessage());
         }
+        if (!model.getNewPassword().matches(model.getConfirmPassword())) {
+            return templateResponse.error("password does not match");
+        }
         user.setPassword(passwordEncoder.encode(model.getNewPassword().replaceAll("\\s+", "")));
         user.setOtpExpiredDate(null);
         user.setOtp(null);
 
         try {
             userRepository.save(user);
-            success = "success";
+            success = "Reset password succeeded";
         } catch (Exception e) {
-            return templateResponse.error("Gagal simpan user");
+            return templateResponse.error("failed to reset password");
         }
         return templateResponse.success(success);
+    }
+
+    @PostMapping("/check-token/{otp}")
+    public Map cheKTOkenValid(@PathVariable(value = "otp") String otp) {
+        if (otp == null) return templateResponse.error("OTP is required");
+
+        User user = userRepository.findOneByOTP(otp);
+        if (user == null) {
+            return templateResponse.error("OTP not valid");
+        }
+
+        return templateResponse.success("OTP valid");
     }
 
 }

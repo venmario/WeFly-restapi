@@ -49,7 +49,7 @@ public class JwtFilter implements Filter {
                 Long userId = Long.valueOf(jwt.getClaimAsString("id"));
                 request.setAttribute("userId", userId);
             } catch (Exception e) {
-                log.error("Error : " + e);
+                log.error("Error JWT filter: " + e);
                 templateResponse.error("token data process error : " + e);
             }
         }

@@ -1,5 +1,6 @@
 package com.example.wefly_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -26,9 +28,16 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     @Column(length = 100, unique = true)
     private String username;
 
-    private String firstName;
+    private String fullName;
 
-    private String lastName;
+    private String gender;
+
+    private String city;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private LocalDate dateOfBirth;
+
+    private String phoneNumber;
 
     @JsonIgnore
     private String password;

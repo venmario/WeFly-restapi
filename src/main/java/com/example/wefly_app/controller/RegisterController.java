@@ -2,6 +2,7 @@ package com.example.wefly_app.controller;
 
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.UserRepository;
+import com.example.wefly_app.request.RegisterGoogleModel;
 import com.example.wefly_app.request.RegisterModel;
 import com.example.wefly_app.service.UserService;
 import com.example.wefly_app.util.EmailSender;
@@ -56,7 +57,7 @@ public class RegisterController {
     }
 
     @PostMapping("/register-google")
-    public ResponseEntity<Map> saveRegisterByGoogle(@Valid @RequestBody RegisterModel objModel) throws RuntimeException {
+    public ResponseEntity<Map> saveRegisterByGoogle(@Valid @RequestBody RegisterGoogleModel objModel) throws RuntimeException {
         Map map = new HashMap();
 
         User user = userRepository.checkExistingEmail(objModel.getUsername());
@@ -65,15 +66,11 @@ public class RegisterController {
 
         }
         map = serviceReq.registerByGoogle(objModel);
-        //gunanya send email
-        Map mapRegister =  sendEmailegister(objModel);
-        return new ResponseEntity<Map>(mapRegister, HttpStatus.OK);
+//        Map mapRegister =  sendEmailegister(objModel);
+        return new ResponseEntity<Map>(map, HttpStatus.OK);
 
     }
 
-
-
-    // Step 2: sendp OTP berupa URL: guna updeta enable agar bisa login:
     @PostMapping("/send-otp")//send OTP
     public Map sendEmailegister(
             @RequestBody RegisterModel user) {
@@ -84,7 +81,7 @@ public class RegisterController {
         if (found == null) return templateResponse.error("Email not registered"); //throw new BadRequest
 
         String template = emailTemplate.getRegisterTemplate();
-        String fullname = found.getFirstName() + " " + found.getLastName();
+        String fullname = found.getFullName();
         if (StringUtils.isEmpty(found.getOtp())) {
             User search;
             String otp;
@@ -120,22 +117,21 @@ public class RegisterController {
         if (null == user) {
             return new ResponseEntity<Map>(templateResponse.error("OTP tidak ditemukan"), HttpStatus.OK);
         }
-//validasi jika sebelumnya sudah melakukan aktifasi
 
         if(user.isEnabled()){
-            return new ResponseEntity<Map>(templateResponse.error("Akun Anda sudah aktif, Silahkan melakukan login"), HttpStatus.OK);
+            return new ResponseEntity<Map>(templateResponse.error("Account is active, go to login page"), HttpStatus.OK);
         }
         String today = simpleStringUtils.convertDateToString(new Date());
 
         String dateToken = simpleStringUtils.convertDateToString(user.getOtpExpiredDate());
         if(Long.parseLong(today) > Long.parseLong(dateToken)){
-            return new ResponseEntity<Map>(templateResponse.error("Your token is expired. Please Get token again."), HttpStatus.OK);
+            return new ResponseEntity<Map>(templateResponse.error("OTP expired. Please get new OTP."), HttpStatus.OK);
         }
         //update user
         user.setEnabled(true);
         userRepository.save(user);
 
-        return new ResponseEntity<Map>(templateResponse.success("Sukses, Silahkan Melakukan Login"), HttpStatus.OK);
+        return new ResponseEntity<Map>(templateResponse.success("Success, go to login page"), HttpStatus.OK);
     }
 
 

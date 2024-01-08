@@ -31,10 +31,10 @@ public class Oauth2ResourceServerConfiguration extends ResourceServerConfigurerA
                 .disable()
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/v1/user-login/**", "/v1/forget-password/**", "/v1/user-register/**", "/v1/user/**", "/v1/user/username/**")
+                .antMatchers("/v1/user-login/**", "/v1/forget-password/**", "/v1/user-register/**", "/v1/user/**")
                 .permitAll()
-                .antMatchers("/v1/user/list", "/v1/user/{id}").hasAnyAuthority("ROLE_ADMIN")
-                .antMatchers("/v1/user/update").hasAnyAuthority("ROLE_USER")
+//                .antMatchers("/v1/user/list", "/v1/user/{id}").hasAnyAuthority("ROLE_ADMIN")
+//                .antMatchers("/v1/user/update").hasAnyAuthority("ROLE_USER")
                 .and()
                 .authorizeRequests()
                 .anyRequest()
@@ -42,6 +42,8 @@ public class Oauth2ResourceServerConfiguration extends ResourceServerConfigurerA
                 .and()
                 .formLogin()
                 .permitAll()
+                .and()
+                .oauth2Login()
         ;
     }
 }
