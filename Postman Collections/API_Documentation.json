@@ -139,7 +139,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"sultonibrahim14044@gmail.com\",\r\n    \"password\": \"IniPassword\",\r\n    \"firstName\": \"Ini\",\r\n    \"lastName\": \"User\"\r\n}\r\n",
+									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"password\": \"IniPassword\",\r\n    \"firstName\": \"test test\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
