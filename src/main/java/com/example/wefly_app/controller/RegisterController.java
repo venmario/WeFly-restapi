@@ -2,6 +2,7 @@ package com.example.wefly_app.controller;
 
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.UserRepository;
+import com.example.wefly_app.request.ForgotPasswordModel;
 import com.example.wefly_app.request.RegisterGoogleModel;
 import com.example.wefly_app.request.RegisterModel;
 import com.example.wefly_app.service.UserService;
@@ -73,7 +74,7 @@ public class RegisterController {
 
     @PostMapping("/send-otp")//send OTP
     public Map sendEmailegister(
-            @RequestBody RegisterModel user) {
+            @Valid @RequestBody ForgotPasswordModel user) {
         String message = "Thanks, please check your email for activation.";
 
         if (user.getUsername() == null) return templateResponse.error("No email provided");

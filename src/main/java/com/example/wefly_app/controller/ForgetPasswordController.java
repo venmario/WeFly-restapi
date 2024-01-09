@@ -2,21 +2,28 @@ package com.example.wefly_app.controller;
 
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.UserRepository;
+import com.example.wefly_app.request.ForgotPasswordModel;
 import com.example.wefly_app.request.ResetPasswordModel;
 import com.example.wefly_app.service.UserService;
 import com.example.wefly_app.util.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/forget-password/")
+@Slf4j
 public class ForgetPasswordController {
 
     @Autowired
@@ -43,10 +50,10 @@ public class ForgetPasswordController {
 
     // Step 1 : Send OTP
     @PostMapping("/forgot-password")//send OTP//send OTP
-    public Map sendEmailPassword(@RequestBody ResetPasswordModel user) {
-        if (StringUtils.isEmpty(user.getUsername())) return templateResponse.error("No username provided");
+    public ResponseEntity<Map> sendEmailPassword(@Valid @RequestBody ForgotPasswordModel user) {
+        if (StringUtils.isEmpty(user.getUsername())) return new ResponseEntity<Map>(templateResponse.error("No email provided"), HttpStatus.BAD_REQUEST);
         User found = userRepository.findOneByUsername(user.getUsername());
-        if (found == null) return templateResponse.error("Email not found"); //throw new BadRequest("Email not found");
+        if (found == null) return new ResponseEntity<Map>(templateResponse.notFound("Email Not Found"), HttpStatus.NOT_FOUND);
 
         String template = emailTemplate.getResetPassword();
         if (StringUtils.isEmpty(found.getOtp())) {
@@ -81,48 +88,49 @@ public class ForgetPasswordController {
         emailSender.sendAsync(found.getUsername(), "Chute - Forget Password", template);
 
 
-        return templateResponse.success("success, please check your email");
+        return new ResponseEntity<Map>(templateResponse.success("Success, Please Check Your Email"), HttpStatus.OK);
 
     }
 
     // Step 2 : lakukan reset password baru
+    @Transactional
     @PostMapping("/change-password")
-    public Map resetPassword(@RequestBody ResetPasswordModel model) {
-        if (model.getOtp() == null) return templateResponse.error("Token is required");
-        if (model.getNewPassword() == null) return templateResponse.error("New Password is required");
-        User user = userRepository.findOneByOTP(model.getOtp());
-        String success;
-        if (user == null) return templateResponse.error("Token not valid");
-        
-        if (!passwordValidatorUtil.validatePassword(model.getNewPassword())) {
-            return templateResponse.error(passwordValidatorUtil.getMessage());
-        }
-        if (!model.getNewPassword().matches(model.getConfirmPassword())) {
-            return templateResponse.error("password does not match");
-        }
-        user.setPassword(passwordEncoder.encode(model.getNewPassword().replaceAll("\\s+", "")));
-        user.setOtpExpiredDate(null);
-        user.setOtp(null);
-
+    public ResponseEntity<Map> resetPassword(@Valid @RequestBody ResetPasswordModel model) {
         try {
+            if (model.getOtp() == null) return new ResponseEntity<Map>(templateResponse.error("Token is required"), HttpStatus.BAD_REQUEST);
+            if (model.getNewPassword() == null) return new ResponseEntity<Map>(templateResponse.error("New Password Must not Null"), HttpStatus.BAD_REQUEST);
+            User user = userRepository.findOneByOTP(model.getOtp());
+            String success;
+            if (user == null) return new ResponseEntity<Map>(templateResponse.error("OTP is not valid"), HttpStatus.BAD_REQUEST);
+
+            if (!passwordValidatorUtil.validatePassword(model.getNewPassword())) {
+                return new ResponseEntity<Map>(templateResponse.error(passwordValidatorUtil.getMessage()), HttpStatus.BAD_REQUEST);
+            }
+            if (!model.getNewPassword().matches(model.getConfirmPassword())) {
+                return new ResponseEntity<Map>(templateResponse.error("Confirm Password not Match"), HttpStatus.BAD_REQUEST);
+            }
+            user.setPassword(passwordEncoder.encode(model.getNewPassword().replaceAll("\\s+", "")));
+            user.setOtpExpiredDate(null);
+            user.setOtp(null);
+
             userRepository.save(user);
-            success = "Reset password succeeded";
+            log.info("reset password success");
+            return new ResponseEntity<Map>(templateResponse.success("Reset Password Succeed"), HttpStatus.OK);
         } catch (Exception e) {
-            return templateResponse.error("failed to reset password");
+            return new ResponseEntity<Map>(templateResponse.error("Failed to Reset Password"), HttpStatus.BAD_REQUEST);
         }
-        return templateResponse.success(success);
     }
 
     @PostMapping("/check-token/{otp}")
-    public Map cheKTOkenValid(@PathVariable(value = "otp") String otp) {
-        if (otp == null) return templateResponse.error("OTP is required");
+    public ResponseEntity<Map> cheKTOkenValid(@PathVariable(value = "otp") String otp) {
+        if (otp == null) return new ResponseEntity<Map>(templateResponse.error("OTP is Required"), HttpStatus.BAD_REQUEST);
 
         User user = userRepository.findOneByOTP(otp);
         if (user == null) {
-            return templateResponse.error("OTP not valid");
+            return new ResponseEntity<Map>(templateResponse.error("OTP is not valid"), HttpStatus.BAD_REQUEST);
         }
 
-        return templateResponse.success("OTP valid");
+        return new ResponseEntity<Map>(templateResponse.success("OTP is valid"), HttpStatus.OK);
     }
 
 }

@@ -34,9 +34,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/user-login/")
@@ -107,6 +111,7 @@ public class LoginController {
 //            dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
 
             Credential credential = authorize();
+
             oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
                     "Oauth2").build();
         } catch (IOException e) {
@@ -181,12 +186,32 @@ public class LoginController {
                     + "into oauth2-cmdline-sample/src/main/resources/client_secrets.json");
             System.exit(1);
         }
+        String url = "https://accounts.google.com/o/oauth2/auth?client_id=827728346612-3snunq8ei4spd1l3sfjg1n6c6u8sagph.apps.googleusercontent.com&redirect_uri=http://localhost:57035/Callback&response_type=code&scope=https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email";
+        openBrowser(url);
         // set up authorization code flow
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport, JSON_FACTORY, clientSecrets, SCOPES).build();
         // authorize
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
+
+    private static void openBrowser(String url) {
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    desktop.browse(new URI(url));
+                } catch (IOException | URISyntaxException e) {
+                    e.printStackTrace();
+                    // Handle the error scenario
+                }
+            }
+        } else {
+            System.err.println("Desktop is not supported. Please open the URL manually.");
+            System.out.println(url);
+        }
+    }
+
 
 
 }
