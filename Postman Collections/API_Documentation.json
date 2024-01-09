@@ -1574,7 +1574,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"728232\"\r\n}",
+							"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"076856\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1600,14 +1600,14 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@2D\",\r\n    \"otp\": \"728232\"\r\n}",
+									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@2D\",\r\n    \"otp\": \"076856\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/forget-password/change-password"
+								"url": "http://188.166.196.8:8081/api/v1/forget-password/change-password"
 							},
 							"status": "Bad Request",
 							"code": 400,
@@ -1625,14 +1625,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"a\",\r\n    \"confirmPassword\": \"password@1d\",\r\n    \"otp\": \"728232\"\r\n}",
+									"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"a\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"076856\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/forget-password/change-password"
+								"url": "http://188.166.196.8:8081/api/v1/forget-password/change-password"
 							},
 							"status": "Bad Request",
 							"code": 400,
@@ -1650,14 +1650,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"559812\"\r\n}",
+									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"559812\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/forget-password/change-password"
+								"url": "http://188.166.196.8:8081/api/v1/forget-password/change-password"
 							},
 							"_postman_previewlanguage": null,
 							"header": null,
@@ -1673,14 +1673,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"andikatirtax@gmail.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"728232\"\r\n}",
+									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"newPassword\": \"password@1D\",\r\n    \"confirmPassword\": \"password@1D\",\r\n    \"otp\": \"076856\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/forget-password/change-password"
+								"url": "http://188.166.196.8:8081/api/v1/forget-password/change-password"
 							},
 							"status": "OK",
 							"code": 200,
