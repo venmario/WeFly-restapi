@@ -29,7 +29,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8081/api/v1/user-register/register-user",
+						"url": "http://188.166.196.8:8081/api/v1/user-register/register-user",
 						"description": "Endpoint ini digunakan untuk mendaftarkan pengguna baru dalam aplikasi. Pengguna harus memberikan alamat email unik, kata sandi, serta nama depan dan belakang mereka."
 					},
 					"response": [
@@ -48,7 +48,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-register/register-user"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/register-user"
 							},
 							"status": "OK",
 							"code": 200,
@@ -146,7 +146,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-register/register-user"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/register-user"
 							},
 							"status": "OK",
 							"code": 200,
@@ -244,7 +244,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-register/register-user"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/register-user"
 							},
 							"status": "OK",
 							"code": 200,
@@ -347,7 +347,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8081/api/v1/user-register/send-otp",
+						"url": "http://188.166.196.8:8081/api/v1/user-register/send-otp",
 						"description": "Endpoint ini digunakan untuk mengirimkan One-Time Password (OTP) ke alamat email pengguna yang sudah terdaftar. OTP akan digunakan untuk verifikasi identitas pengguna."
 					},
 					"response": [
@@ -366,7 +366,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-register/send-otp"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/send-otp"
 							},
 							"status": "OK",
 							"code": 200,
@@ -464,7 +464,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-register/send-otp"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/send-otp"
 							},
 							"status": "OK",
 							"code": 200,
@@ -558,7 +558,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8081/api/v1/user-register/register-confirm-otp/742953",
+						"url": "http://188.166.196.8:8081/api/v1/user-register/register-confirm-otp/076856",
 						"description": "Endpoint ini digunakan untuk konfirmasi One-Time Password (OTP) ke alamat email pengguna yang sudah terdaftar. OTP akan digunakan untuk verifikasi identitas pengguna."
 					},
 					"response": [
@@ -568,7 +568,7 @@
 							"originalRequest": {
 								"method": "GET",
 								"header": [],
-								"url": "http://localhost:8081/api/v1/user-register/register-confirm-otp/383281"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/register-confirm-otp/076856"
 							},
 							"status": "OK",
 							"code": 200,
@@ -657,7 +657,7 @@
 							"originalRequest": {
 								"method": "GET",
 								"header": [],
-								"url": "http://localhost:8081/api/v1/user-register/register-confirm-otp/383275"
+								"url": "http://188.166.196.8:8081/api/v1/user-register/register-confirm-otp/383275"
 							},
 							"_postman_previewlanguage": null,
 							"header": null,
@@ -692,7 +692,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8081/api/v1/user-login/login",
+						"url": "http://188.166.196.8:8081/api/v1/user-login/login",
 						"description": "Endpoint ini digunakan untuk melakukan login menggunakan email dan password yang sudah terdaftarEndFragment"
 					},
 					"response": [
@@ -711,7 +711,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-login/login"
+								"url": "http://188.166.196.8:8081/api/v1/user-login/login"
 							},
 							"status": "OK",
 							"code": 200,
@@ -809,7 +809,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-login/login"
+								"url": "http://188.166.196.8:8081/api/v1/user-login/login"
 							},
 							"status": "OK",
 							"code": 200,
@@ -907,7 +907,7 @@
 										}
 									}
 								},
-								"url": "http://localhost:8081/api/v1/user-login/login"
+								"url": "http://188.166.196.8:8081/api/v1/user-login/login"
 							},
 							"status": "OK",
 							"code": 200,
@@ -1010,7 +1010,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8081/api/v1/user-login/signin_google",
+						"url": "http://188.166.196.8:8081/api/v1/user-login/signin_google",
 						"description": "Login and Sign-up with google, jika sudah terdaftar bisa langsung login dan jika belum akan didaftarkan dan login"
 					},
 					"response": [
