@@ -41,7 +41,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"password\": \"IniPassword14045!\",\r\n    \"firstName\": \"Nama_Depan\",\r\n    \"lastName\": \"Nama_Belakang\"\r\n}\r\n",
+									"raw": "{\r\n    \"username\": \"pengguna@example.com\",\r\n    \"password\": \"IniPassword14045!\",\r\n    \"fullName\": \"Nama_Depan\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -237,7 +237,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"asdasdasasd@\",\r\n    \"password\": \"IniPassword\",\r\n    \"firstName\": \"Inias\",\r\n    \"lastName\": \"Userasd\"\r\n}\r\n",
+									"raw": "{\r\n    \"username\": \"asdasdasasd@\",\r\n    \"password\": \"IniPassword\",\r\n    \"fullName\": \"full name\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
