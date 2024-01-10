@@ -1,5 +1,6 @@
 package com.example.wefly_app.service.impl;
 
+import com.example.wefly_app.entity.Provider;
 import com.example.wefly_app.entity.Role;
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;
@@ -10,8 +11,7 @@ import com.example.wefly_app.request.RegisterModel;
 import com.example.wefly_app.request.UpdateUserModel;
 import com.example.wefly_app.service.UserService;
 import com.example.wefly_app.service.oauth.Oauth2UserDetailsService;
-import com.example.wefly_app.util.PasswordValidatorUtil;
-import com.example.wefly_app.util.TemplateResponse;
+import com.example.wefly_app.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +57,15 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Autowired
+    public EmailTemplate emailTemplate;
+
+    @Autowired
+    public EmailSender emailSender;
+
+    @Value("${expired.token.password.minute:}")//FILE_SHOW_RUL
+    private int expiredToken;
+
+    @Autowired
     public TemplateResponse templateResponse;
     @Autowired
     public PasswordValidatorUtil passwordValidatorUtil = new PasswordValidatorUtil();
@@ -69,7 +78,7 @@ public class UserServiceImpl implements UserService {
         try {
             Map<String, Object> map = new HashMap<>();
 
-            User checkUser = userRepository.findOneByUsername(loginModel.getUsername());
+            User checkUser = userRepository.findOneByUsername(loginModel.getEmail());
 
             if ((checkUser != null) && (encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 if (!checkUser.isEnabled()) {
@@ -82,7 +91,7 @@ public class UserServiceImpl implements UserService {
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 return templateResponse.error("wrong password");
             }
-            String url = baseUrl + "/oauth/token?username=" + loginModel.getUsername() +
+            String url = baseUrl + "/oauth/token?username=" + loginModel.getEmail() +
                     "&password=" + loginModel.getPassword() +
                     "&grant_type=password" +
                     "&client_id=my-client-web" +
@@ -92,7 +101,7 @@ public class UserServiceImpl implements UserService {
                     });
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                User user = userRepository.findOneByUsername(loginModel.getUsername());
+                User user = userRepository.findOneByUsername(loginModel.getEmail());
                 List<String> roles = new ArrayList<>();
 
                 for (Role role : user.getRoles()) {
@@ -135,7 +144,7 @@ public class UserServiceImpl implements UserService {
         try {
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"}; // admin
             User user = new User();
-            user.setUsername(objModel.getUsername().toLowerCase());
+            user.setUsername(objModel.getEmail().toLowerCase());
             user.setFullName(objModel.getFullName());
             user.setPhoneNumber(objModel.getPhoneNumber());
 
@@ -147,9 +156,28 @@ public class UserServiceImpl implements UserService {
             List<Role> r = repoRole.findByNameIn(roleNames);
             user.setRoles(r);
             user.setPassword(password);
-            User obj = repoUser.save(user);
 
-            return templateResponse.success(obj);
+            String template = emailTemplate.getRegisterTemplate();
+            String fullname = user.getFullName();
+            User search;
+            String otp;
+            do {
+                otp = SimpleStringUtils.randomString(6, true);
+                search = userRepository.findOneByOTP(otp); // need to be fixed later for performance purpose
+            } while (search != null);
+            Date dateNow = new Date();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dateNow);
+            calendar.add(Calendar.MINUTE, expiredToken);
+            Date expirationDate = calendar.getTime();
+
+            user.setOtp(otp);
+            user.setOtpExpiredDate(expirationDate);
+            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
+            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
+            emailSender.sendAsync(user.getUsername(), "Register", template);
+            repoUser.save(user);
+            return templateResponse.success("Please check email for activation");
 
         } catch (Exception e) {
             logger.error("Eror registerManual=", e);
@@ -164,7 +192,7 @@ public class UserServiceImpl implements UserService {
         try {
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"};
             User user = new User();
-            user.setUsername(objModel.getUsername().toLowerCase());
+            user.setUsername(objModel.getEmail().toLowerCase());
             user.setFullName(objModel.getFullName());
             user.setEnabled(true);
 
@@ -271,7 +299,7 @@ public class UserServiceImpl implements UserService {
     public Map<Object, Object> getIdByUserName(String username) {
         try {
             log.info("Get Id");
-            User user = userRepository.findOneByUsername(username);
+            User user = userRepository.findOneByOTP(username);
             if (user == null) return templateResponse.error("User not found");
             return templateResponse.success(user);
         } catch (Exception e) {

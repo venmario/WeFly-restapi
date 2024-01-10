@@ -25,6 +25,9 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
     @Column(length = 100, unique = true)
     private String username;
 

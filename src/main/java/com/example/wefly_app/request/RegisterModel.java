@@ -6,8 +6,8 @@ import javax.validation.constraints.NotEmpty;
 
 @Data
 public class RegisterModel {
-    @NotEmpty(message = "username is required.")
-    private String username;
+    @NotEmpty(message = "email is required.")
+    private String email;
     @NotEmpty(message = "password is required.")
     private String password;
     @NotEmpty(message = "full name is required.")
