@@ -51,8 +51,8 @@ public class ForgetPasswordController {
     // Step 1 : Send OTP
     @PostMapping("/forgot-password")//send OTP//send OTP
     public ResponseEntity<Map> sendEmailPassword(@Valid @RequestBody ForgotPasswordModel user) {
-        if (StringUtils.isEmpty(user.getUsername())) return new ResponseEntity<Map>(templateResponse.error("No email provided"), HttpStatus.BAD_REQUEST);
-        User found = userRepository.findOneByUsername(user.getUsername());
+        if (StringUtils.isEmpty(user.getEmail())) return new ResponseEntity<Map>(templateResponse.error("No email provided"), HttpStatus.BAD_REQUEST);
+        User found = userRepository.findOneByEmail(user.getEmail());
         if (found == null) return new ResponseEntity<Map>(templateResponse.notFound("Email Not Found"), HttpStatus.NOT_FOUND);
 
         String template = emailTemplate.getResetPassword();

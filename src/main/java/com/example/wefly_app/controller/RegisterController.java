@@ -47,7 +47,7 @@ public class RegisterController {
     public ResponseEntity<Map> saveRegisterManual(@Valid @RequestBody RegisterModel objModel) throws RuntimeException {
         Map map = new HashMap();
 
-        User user = userRepository.checkExistingEmail(objModel.getUsername());
+        User user = userRepository.checkExistingEmail(objModel.getEmail());
         if (null != user) {
             return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
 
@@ -77,8 +77,8 @@ public class RegisterController {
             @Valid @RequestBody ForgotPasswordModel user) {
         String message = "Thanks, please check your email for activation.";
 
-        if (user.getUsername() == null) return templateResponse.error("No email provided");
-        User found = userRepository.findOneByUsername(user.getUsername());
+        if (user.getEmail() == null) return templateResponse.error("No email provided");
+        User found = userRepository.findOneByEmail(user.getEmail());
         if (found == null) return templateResponse.error("Email not registered"); //throw new BadRequest
 
         String template = emailTemplate.getRegisterTemplate();

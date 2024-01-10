@@ -6,5 +6,5 @@ import javax.validation.constraints.NotEmpty;
 @Data
 public class ForgotPasswordModel {
     @NotEmpty(message = "email is required")
-    private String username;
+    private String email;
 }

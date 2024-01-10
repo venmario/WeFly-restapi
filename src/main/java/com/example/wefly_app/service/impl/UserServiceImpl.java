@@ -1,5 +1,6 @@
 package com.example.wefly_app.service.impl;
 
+import com.example.wefly_app.entity.Provider;
 import com.example.wefly_app.entity.Role;
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService {
         try {
             Map<String, Object> map = new HashMap<>();
 
-            User checkUser = userRepository.findOneByUsername(loginModel.getUsername());
+            User checkUser = userRepository.findOneByEmail(loginModel.getEmail());
 
             if ((checkUser != null) && (encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 if (!checkUser.isEnabled()) {
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 return templateResponse.error("wrong password");
             }
-            String url = baseUrl + "/oauth/token?username=" + loginModel.getUsername() +
+            String url = baseUrl + "/oauth/token?username=" + loginModel.getEmail() +
                     "&password=" + loginModel.getPassword() +
                     "&grant_type=password" +
                     "&client_id=my-client-web" +
@@ -92,10 +93,9 @@ public class UserServiceImpl implements UserService {
                     });
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                User user = userRepository.findOneByUsername(loginModel.getUsername());
                 List<String> roles = new ArrayList<>();
 
-                for (Role role : user.getRoles()) {
+                for (Role role : checkUser.getRoles()) {
                     roles.add(role.getName());
                 }
                 //save token
@@ -112,6 +112,8 @@ public class UserServiceImpl implements UserService {
                 map.put("message","Success");
                 map.put("code",200);
 
+                checkUser.setProvider(Provider.LOCAL);
+                userRepository.save(checkUser);
                 return map;
             } else {
                 return templateResponse.error("user not found");
@@ -135,7 +137,7 @@ public class UserServiceImpl implements UserService {
         try {
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"}; // admin
             User user = new User();
-            user.setUsername(objModel.getUsername().toLowerCase());
+            user.setEmail(objModel.getEmail().toLowerCase());
             user.setFullName(objModel.getFullName());
             user.setPhoneNumber(objModel.getPhoneNumber());
 
@@ -164,7 +166,7 @@ public class UserServiceImpl implements UserService {
         try {
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"};
             User user = new User();
-            user.setUsername(objModel.getUsername().toLowerCase());
+            user.setEmail(objModel.getEmail().toLowerCase());
             user.setFullName(objModel.getFullName());
             user.setEnabled(true);
 
@@ -260,7 +262,7 @@ public class UserServiceImpl implements UserService {
         if (null == user) {
             throw new UsernameNotFoundException("User not found");
         }
-        User idUser = userRepository.findOneByUsername(user.getUsername());
+        User idUser = userRepository.findOneByEmail(user.getUsername());
         if (null == idUser) {
             throw new UsernameNotFoundException("User name not found");
         }
@@ -271,7 +273,7 @@ public class UserServiceImpl implements UserService {
     public Map<Object, Object> getIdByUserName(String username) {
         try {
             log.info("Get Id");
-            User user = userRepository.findOneByUsername(username);
+            User user = userRepository.findOneByOTP(username);
             if (user == null) return templateResponse.error("User not found");
             return templateResponse.success(user);
         } catch (Exception e) {
