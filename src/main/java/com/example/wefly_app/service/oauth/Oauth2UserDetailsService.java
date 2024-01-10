@@ -17,7 +17,7 @@ public class Oauth2UserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findOneByEmail(s);
+        User user = userRepository.findOneByUsername(s);
         if (null == user) {
             throw new UsernameNotFoundException(String.format("Email %s is not found", s));
         }

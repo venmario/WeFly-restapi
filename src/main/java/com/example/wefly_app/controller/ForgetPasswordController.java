@@ -36,6 +36,7 @@ public class ForgetPasswordController {
 
     @Value("${expired.token.password.minute:}")//FILE_SHOW_RUL
     private int expiredToken;
+
     @Autowired
     public TemplateResponse templateResponse;
 
@@ -52,7 +53,7 @@ public class ForgetPasswordController {
     @PostMapping("/forgot-password")//send OTP//send OTP
     public ResponseEntity<Map> sendEmailPassword(@Valid @RequestBody ForgotPasswordModel user) {
         if (StringUtils.isEmpty(user.getEmail())) return new ResponseEntity<Map>(templateResponse.error("No email provided"), HttpStatus.BAD_REQUEST);
-        User found = userRepository.findOneByEmail(user.getEmail());
+        User found = userRepository.findOneByUsername(user.getEmail());
         if (found == null) return new ResponseEntity<Map>(templateResponse.notFound("Email Not Found"), HttpStatus.NOT_FOUND);
 
         String template = emailTemplate.getResetPassword();

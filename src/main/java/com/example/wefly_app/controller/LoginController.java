@@ -83,22 +83,6 @@ public class LoginController {
     @Value("${APPNAME:}")//FILE_SHOW_RUL
     private String APPNAME;
 
-    private static final java.io.File DATA_STORE_DIR =
-            new java.io.File(System.getProperty("user.home"), ".store/oauth2_sample");
-
-    private static FileDataStoreFactory dataStoreFactory;
-
-    private static HttpTransport httpTransport;
-
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    private static final List<String> SCOPES = Arrays.asList(
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email");
-
-    private static Oauth2 oauth2;
-    private static GoogleClientSecrets clientSecrets;
-
     @PostMapping("/login")
 //    @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map> login(@Valid @RequestBody LoginModel objModel) {
@@ -126,7 +110,7 @@ public class LoginController {
         }
         profile.toPrettyString();
         String pass = "Password123";
-        User user = userRepository.findOneByEmail(profile.getEmail());
+        User user = userRepository.findOneByUsername(profile.getEmail());
         if (null != user) {
             if (!user.isEnabled()) {
                 return new ResponseEntity<Map>(response.error("Your Account is disable. Please check your email for activation."), HttpStatus.OK);
@@ -145,7 +129,7 @@ public class LoginController {
             registerModel.setEmail(profile.getEmail());
             registerModel.setPassword(pass);
             serviceReq.registerByGoogle(registerModel);
-            user = userRepository.findOneByEmail(profile.getEmail());
+            user = userRepository.findOneByUsername(profile.getEmail());
             log.info("register success!");
         }
         String url = AUTHURL + "?username=" + profile.getEmail() +
@@ -174,42 +158,6 @@ public class LoginController {
         }
         return new ResponseEntity<Map>(map123, HttpStatus.OK);
     }
-//
-//    private static Credential authorize() throws Exception {
-//        // load client secrets
-//        clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-//                new InputStreamReader(Objects.requireNonNull(OAuth2Sample.class.getResourceAsStream("/client_secret.json"))));
-//        if (clientSecrets.getDetails().getClientId().startsWith("Enter")
-//                || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-//            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/ "
-//                    + "into oauth2-cmdline-sample/src/main/resources/client_secrets.json");
-//            System.exit(1);
-//        }
-//        // set up authorization code flow
-//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-//                httpTransport, JSON_FACTORY, clientSecrets, SCOPES).build();
-//
-//        // authorize
-//        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-//    }
-//
-//    private static void openBrowser(String url) {
-//        if (Desktop.isDesktopSupported()) {
-//            Desktop desktop = Desktop.getDesktop();
-//            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-//                try {
-//                    desktop.browse(new URI(url));
-//                } catch (IOException | URISyntaxException e) {
-//                    e.printStackTrace();
-//                    // Handle the error scenario
-//                }
-//            }
-//        } else {
-//            System.err.println("Desktop is not supported. Please open the URL manually.");
-//            System.out.println(url);
-//        }
-//    }
-
 
 
 }

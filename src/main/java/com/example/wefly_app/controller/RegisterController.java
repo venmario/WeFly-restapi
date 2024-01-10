@@ -47,7 +47,7 @@ public class RegisterController {
     public ResponseEntity<Map> saveRegisterManual(@Valid @RequestBody RegisterModel objModel) throws RuntimeException {
         Map map = new HashMap();
 
-        User user = userRepository.checkExistingEmail(objModel.getEmail());
+        User user = userRepository.checkExistingUsername(objModel.getEmail());
         if (null != user) {
             return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
 
@@ -72,42 +72,42 @@ public class RegisterController {
 //
 //    }
 
-    @PostMapping("/send-otp")//send OTP
-    public Map sendEmailegister(
-            @Valid @RequestBody ForgotPasswordModel user) {
-        String message = "Thanks, please check your email for activation.";
-
-        if (user.getEmail() == null) return templateResponse.error("No email provided");
-        User found = userRepository.findOneByEmail(user.getEmail());
-        if (found == null) return templateResponse.error("Email not registered"); //throw new BadRequest
-
-        String template = emailTemplate.getRegisterTemplate();
-        String fullname = found.getFullName();
-        if (StringUtils.isEmpty(found.getOtp())) {
-            User search;
-            String otp;
-            do {
-                otp = SimpleStringUtils.randomString(6, true);
-                search = userRepository.findOneByOTP(otp); // need to be fixed later for performance purpose
-            } while (search != null);
-            Date dateNow = new Date();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dateNow);
-            calendar.add(Calendar.MINUTE, expiredToken);
-            Date expirationDate = calendar.getTime();
-
-            found.setOtp(otp);
-            found.setOtpExpiredDate(expirationDate);
-            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? found.getUsername() : fullname));
-            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  otp);
-            userRepository.save(found);
-        } else {
-            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? found.getUsername() : fullname));
-            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  found.getOtp());
-        }
-        emailSender.sendAsync(found.getUsername(), "Register", template);
-        return templateResponse.success(message);
-    }
+//    @PostMapping("/send-otp")//send OTP
+//    public Map sendEmailegister(
+//            @Valid @RequestBody ForgotPasswordModel user) {
+//        String message = "Thanks, please check your email for activation.";
+//
+//        if (user.getEmail() == null) return templateResponse.error("No email provided");
+//        User found = userRepository.findOneByUsername(user.getEmail());
+//        if (found == null) return templateResponse.error("Email not registered"); //throw new BadRequest
+//
+//        String template = emailTemplate.getRegisterTemplate();
+//        String fullname = found.getFullName();
+//        if (StringUtils.isEmpty(found.getOtp())) {
+//            User search;
+//            String otp;
+//            do {
+//                otp = SimpleStringUtils.randomString(6, true);
+//                search = userRepository.findOneByOTP(otp); // need to be fixed later for performance purpose
+//            } while (search != null);
+//            Date dateNow = new Date();
+//            Calendar calendar = Calendar.getInstance();
+//            calendar.setTime(dateNow);
+//            calendar.add(Calendar.MINUTE, expiredToken);
+//            Date expirationDate = calendar.getTime();
+//
+//            found.setOtp(otp);
+//            found.setOtpExpiredDate(expirationDate);
+//            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? found.getUsername() : fullname));
+//            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  otp);
+//            userRepository.save(found);
+//        } else {
+//            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? found.getUsername() : fullname));
+//            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  found.getOtp());
+//        }
+//        emailSender.sendAsync(found.getUsername(), "Register", template);
+//        return templateResponse.success(message);
+//    }
 
     @GetMapping("/register-confirm-otp/{token}")
     public ResponseEntity<Map> saveRegisterManual(@PathVariable(value = "token") String tokenOtp) throws RuntimeException {

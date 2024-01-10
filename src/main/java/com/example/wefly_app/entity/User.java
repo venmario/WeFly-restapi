@@ -29,7 +29,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     private Provider provider;
 
     @Column(length = 100, unique = true)
-    private String email;
+    private String username;
 
     private String fullName;
 
@@ -97,7 +97,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
