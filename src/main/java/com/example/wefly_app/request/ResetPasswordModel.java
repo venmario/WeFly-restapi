@@ -2,11 +2,18 @@ package com.example.wefly_app.request;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+
 
 @Data
 public class ResetPasswordModel {
-    public String email;
-    public String otp;
-    public String newPassword;
+    @NotEmpty(message = "email is required")
+    private String username;
+    @NotEmpty(message = "new password required")
+    private String newPassword;
+    @NotEmpty(message = "confirm password required")
+    private String confirmPassword;
+    @NotEmpty(message = "OTP is required")
+    private String otp;
 }
 

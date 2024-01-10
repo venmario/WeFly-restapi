@@ -19,6 +19,13 @@ public class TemplateResponse {
     public Map<Object, Object> error(Object message) {
         Map<Object, Object> map = new HashMap<>();
         map.put("error", message);
+        map.put("code", 400);
+        return map;
+    }
+
+    public Map<Object, Object> notFound(Object message) {
+        Map<Object, Object> map = new HashMap<>();
+        map.put("error", message);
         map.put("code", 404);
         return map;
     }

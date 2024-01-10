@@ -95,7 +95,7 @@ public class EmailTemplate {
                 "<tr>\n" +
                 "<td style=\"text-align:center;\">\n" +
                 "<a href=\"#\" title=\"logo\" target=\"_blank\">\n" +
-                "<img width=\"60\" src=\"https://drive.google.com/uc?export=view&id=1NiO5cQZDXA31eFJozu_wrEHUK4vbzz1o\" title=\"logo\" alt=\"logo\">\n" +
+                "<img width=\"60\" src=\"https://drive.google.com/uc?export=view&id=1aRZ9CeAPCuiso0Cz0_28y0vSJ419CO3i\" title=\"logo\" alt=\"logo\">\n" +
                 "</a>\n" +
                 "</td>\n" +
                 "</tr>\n" +
@@ -118,7 +118,7 @@ public class EmailTemplate {
                 "Please use the verification code below to reset your password : <br/> </p>" +
                 "<strong style=\"font-size:24px;\">{{PASS_TOKEN}}</strong> <br/>\n" +
                 "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
-                "If this action wasn’t done by you, please contact us on <b>rikialdipari@gmail.com</b>. But if it’s you, you can ignore this message. </p>" +
+                "If this action wasn’t done by you, please contact us on <b>andikatirtax@gmail.com</b>. But if it’s you, you can ignore this message. </p>" +
                 "</td>\n"+
                 "</tr>\n"+
                 "<tr>\n" +

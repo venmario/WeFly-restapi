@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.Predicate;
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,9 +35,9 @@ public class UserController {
     @Autowired
     public SimpleStringUtils simpleStringUtils;
 
-    @PreAuthorize("hasROLE('ROLE_USER')")
+//    @PreAuthorize("hasROLE('ROLE_USER')")
     @PutMapping(value = {"/update", "/update/"})
-    public ResponseEntity<Map> update(@RequestBody UpdateUserModel request) {
+    public ResponseEntity<Map> update(@Valid @RequestBody UpdateUserModel request) {
         return new ResponseEntity<Map>(userService.update(request), HttpStatus.OK);
     }
 
@@ -45,40 +46,11 @@ public class UserController {
         return new ResponseEntity<>(userService.delete(request), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasROLE('ROLE_USER')")
-    @GetMapping(value = {"/detail-profile", "/detail-profile/"})
-    public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
-        return new ResponseEntity<>(userService.getById(id), HttpStatus.OK);
-    }
-
-    @GetMapping(value = {"/list", "/list/"})
-    public ResponseEntity<Map> listQuizHeaderSpec(
-            @RequestParam() Integer page,
-            @RequestParam(required = true) Integer size,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String emailAddress,
-            @RequestParam(required = false) String orderby,
-            @RequestParam(required = false) String ordertype) {
-        Pageable showData = simpleStringUtils.getShort(orderby, ordertype, page, size);
-
-        Specification<User> spec =
-                ((root, query, criteriaBuilder) -> {
-                    List<Predicate> predicates = new ArrayList<>();
-                    if (username != null && !username.isEmpty()) {
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
-                    }
-                    if (emailAddress != null && !emailAddress.isEmpty()) {
-                        predicates.add(criteriaBuilder.equal(root.get("email_address"), emailAddress));
-                    }
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-                });
-
-        Page<User> list = userRepository.findAll(spec, showData);
-
-        Map map = new HashMap();
-        map.put("data", list);
-        return new ResponseEntity<Map>(map, new HttpHeaders(), HttpStatus.OK);
-    }
+//    @PreAuthorize("hasROLE('ROLE_USER')")
+//    @GetMapping(value = {"/detail-profile", "/detail-profile/"})
+//    public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
+//        return new ResponseEntity<>(userService.getById(id), HttpStatus.OK);
+//    }
 
     @GetMapping("/detail-token")
     public ResponseEntity<Map> detailProfile(
@@ -86,12 +58,6 @@ public class UserController {
     ) {
         Map map = userService.getDetailProfile(principal);
         return new ResponseEntity<Map>(map, HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasROLE('ROLE_USER')")
-    @GetMapping(value = {"/username/{username}", "/username/{username}/"})
-    public ResponseEntity<Map> getId(@PathVariable("username") String username) {
-        return new ResponseEntity<>(userService.getIdByUserName(username), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/test", "/test/"})

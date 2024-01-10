@@ -5,6 +5,7 @@ import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;
 import com.example.wefly_app.repository.UserRepository;
 import com.example.wefly_app.request.LoginModel;
+import com.example.wefly_app.request.RegisterGoogleModel;
 import com.example.wefly_app.request.RegisterModel;
 import com.example.wefly_app.request.UpdateUserModel;
 import com.example.wefly_app.service.UserService;
@@ -65,9 +66,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map login(LoginModel loginModel) {
-        /**
-         * bussines logic for login here
-         * **/
         try {
             Map<String, Object> map = new HashMap<>();
 
@@ -79,7 +77,7 @@ public class UserServiceImpl implements UserService {
                 }
             }
             if (checkUser == null) {
-                return templateResponse.error("user not found");
+                return templateResponse.error("Incorrect ");
             }
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 return templateResponse.error("wrong password");
@@ -138,12 +136,10 @@ public class UserServiceImpl implements UserService {
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"}; // admin
             User user = new User();
             user.setUsername(objModel.getUsername().toLowerCase());
-            user.setFirstName(objModel.getFirstName());
-            user.setLastName(objModel.getLastName());
+            user.setFullName(objModel.getFullName());
+            user.setPhoneNumber(objModel.getPhoneNumber());
 
-//            //step 1 :
-//            user.setEnabled(false); // matikan user
-            if (objModel.getPassword().isEmpty()) return templateResponse.error("Password is required");
+//            if (objModel.getPassword().isEmpty()) return templateResponse.error("Password is required");
             if (!passwordValidatorUtil.validatePassword(objModel.getPassword())) {
                 return templateResponse.error(passwordValidatorUtil.getMessage());
             }
@@ -162,39 +158,16 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    @Transactional
-    @PreAuthorize("hasRole('ROLE_USER')")
     @Override
-    public Map registerMerchant (User request, UUID merchantId) {
+    public Map registerByGoogle(RegisterGoogleModel objModel) {
         Map map = new HashMap();
         try {
-            Optional<User> checkDataDBUser = userRepository.findById(request.getId());
-            String[] roleNames = {"ROLE_MERCHANT", "ROLE_MERCHANT_P"}; // admin
-            List<Role> r = repoRole.findByNameIn(roleNames);
-            List<Role> existingRole = checkDataDBUser.get().getRoles();
-            existingRole.addAll(r);
-            checkDataDBUser.get().setRoles(existingRole);
-            User obj = repoUser.save(checkDataDBUser.get());
-
-            return templateResponse.success(obj);
-
-        } catch (Exception e) {
-            logger.error("Eror registerManual=", e);
-            return templateResponse.error("eror:"+e);
-        }
-
-    }
-    @Override
-    public Map registerByGoogle(RegisterModel objModel) {
-        Map map = new HashMap();
-        try {
-            String[] roleNames = {"ROLE_USER, ROLE_USER_O, ROLE_USER_OD"};
+            String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"};
             User user = new User();
             user.setUsername(objModel.getUsername().toLowerCase());
-            user.setFirstName(objModel.getFirstName());
-            user.setLastName(objModel.getLastName());
-            //step 1 :
-            user.setEnabled(false); // matikan user
+            user.setFullName(objModel.getFullName());
+            user.setEnabled(true);
+
             String password = encoder.encode(objModel.getPassword().replaceAll("\\s+", ""));
             List<Role> r = repoRole.findByNameIn(roleNames);
             user.setRoles(r);
@@ -203,8 +176,8 @@ public class UserServiceImpl implements UserService {
             return templateResponse.success(obj);
 
         } catch (Exception e) {
-            logger.error("Error registerManual=", e);
-            return templateResponse.error("eror:"+e);
+            logger.error("Error register with google=", e);
+            return templateResponse.error("error:"+e);
         }
     }
 
@@ -215,10 +188,14 @@ public class UserServiceImpl implements UserService {
             log.info("Update User");
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             Long userId = (Long) attribute.getRequest().getAttribute("userId");
+            System.out.println("userID = " + userId);
+            System.out.println("user name = " + attribute.getRequest().getAttribute("test"));
+            if (userId == null) return templateResponse.error("user id null");
             Optional<User> checkDataDBUser = userRepository.findById(userId);
             if (!checkDataDBUser.isPresent()) return templateResponse.error("unidentified token user");
-            if (!request.getFirstName().isEmpty()) checkDataDBUser.get().setFirstName(request.getFirstName());
-            if (!request.getLastName().isEmpty()) checkDataDBUser.get().setLastName(request.getLastName());
+            if (!request.getFullName().isEmpty()) checkDataDBUser.get().setFullName(request.getFullName());
+            if (!request.getCity().isEmpty()) checkDataDBUser.get().setCity(request.getCity());
+            if (request.getDateOfBirth() != null) checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
 
             log.info("Update User Success");
             return templateResponse.success(userRepository.save(checkDataDBUser.get()));

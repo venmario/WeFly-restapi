@@ -12,7 +12,7 @@ public class PasswordValidatorUtil {
     private static final Pattern UPPERCASE_PATTERN = Pattern.compile(".*[A-Z].*");
     private static final Pattern DIGIT_PATTERN = Pattern.compile(".*\\d.*");
     private static final Pattern SPECIAL_CHAR_PATTERN = Pattern.compile(".*[@$!%*?&#].*");
-    private static final Pattern LENGTH_PATTERN = Pattern.compile(".{8,}");
+    private static final Pattern LENGTH_PATTERN = Pattern.compile(".{6,}");
     public String message;
 
     public boolean validatePassword(String password) {
