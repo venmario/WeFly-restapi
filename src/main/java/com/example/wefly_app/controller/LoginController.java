@@ -91,7 +91,7 @@ public class LoginController {
         return new ResponseEntity<Map>(map, HttpStatus.OK);
     }
 
-    @GetMapping({"/signin_google/{accessToken}", "/signin_google/{accessToken}/"})
+    @PostMapping({"/signin_google/{accessToken}", "/signin_google/{accessToken}/"})
     @ResponseBody
     public ResponseEntity<Map> repairGoogleSigninAction(@PathVariable ("accessToken") String token) throws IOException {
         if (StringUtils.isEmpty(token)) {

@@ -4,6 +4,7 @@ import com.example.wefly_app.service.oauth.CustomTokenEnhancer;
 import com.example.wefly_app.service.oauth.Oauth2ClientDetailsService;
 import com.example.wefly_app.service.oauth.Oauth2UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
