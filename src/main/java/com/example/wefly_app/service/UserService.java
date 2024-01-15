@@ -17,7 +17,7 @@ public interface UserService {
     Map<Object, Object> checkOtpValidity(OtpRequestModel request);
     Map<Object, Object> delete(User request);
     Map<Object, Object> update(UpdateUserModel request);
-//    Map<Object, Object> getById(Long id);
+    Map<Object, Object> getById(Long id);
 //    Map<Object, Object> getIdByUserName(String username);
 //    Map<Object, Object> getDetailProfile(Principal principal);
 }
