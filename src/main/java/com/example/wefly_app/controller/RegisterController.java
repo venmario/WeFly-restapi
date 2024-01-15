@@ -1,20 +1,11 @@
 package com.example.wefly_app.controller;
 
-import com.example.wefly_app.entity.User;
-import com.example.wefly_app.repository.UserRepository;
-import com.example.wefly_app.request.ForgotPasswordModel;
-import com.example.wefly_app.request.RegisterGoogleModel;
-import com.example.wefly_app.request.RegisterModel;
+import com.example.wefly_app.request.ManualRegisterModel;
+import com.example.wefly_app.request.OtpRequestModel;
 import com.example.wefly_app.service.UserService;
-import com.example.wefly_app.util.EmailSender;
-import com.example.wefly_app.util.EmailTemplate;
-import com.example.wefly_app.util.SimpleStringUtils;
-import com.example.wefly_app.util.TemplateResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -24,55 +15,19 @@ import java.util.*;
 @RequestMapping("/v1/user-register/")
 public class RegisterController {
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    public EmailSender emailSender;
-    @Autowired
-    public EmailTemplate emailTemplate;
-//    @Autowired
-//    public MerchantService merchantService;
-
-    @Value("${expired.token.password.minute:}")//FILE_SHOW_RUL
-    private int expiredToken;
-
-    @Autowired
     public UserService serviceReq;
 
-    @Autowired
-    public SimpleStringUtils simpleStringUtils;
-
-    @Autowired
-    public TemplateResponse templateResponse;
     @PostMapping("/register-user")
-    public ResponseEntity<Map> saveRegisterManual(@Valid @RequestBody RegisterModel objModel) throws RuntimeException {
-        Map map = new HashMap();
-
-        User user = userRepository.checkExistingUsername(objModel.getEmail());
-        if (null != user) {
-            return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
-
-        }
-        map = serviceReq.registerManual(objModel);
-
-        return new ResponseEntity<Map>(map, HttpStatus.OK);
+    public ResponseEntity<Map> saveRegisterManual(@Valid @RequestBody ManualRegisterModel objModel) {
+        return new ResponseEntity<>(serviceReq.registerManual(objModel), HttpStatus.OK);
     }
 
-//    @PostMapping("/register-google")
-//    public ResponseEntity<Map> saveRegisterByGoogle(@Valid @RequestBody RegisterGoogleModel objModel) throws RuntimeException {
-//        Map map = new HashMap();
-//
-//        User user = userRepository.checkExistingEmail(objModel.getUsername());
-//        if (null != user) {
-//            return new ResponseEntity<Map>(templateResponse.error("Username sudah ada"), HttpStatus.OK);
-//
-//        }
-//        map = serviceReq.registerByGoogle(objModel);
-////        Map mapRegister =  sendEmailegister(objModel);
-//        return new ResponseEntity<Map>(map, HttpStatus.OK);
-//
-//    }
+    @GetMapping("/register-confirm-otp/{token}")
+    public ResponseEntity<Map> saveRegisterManual(@PathVariable(value = "token") OtpRequestModel otp) {
+        return new ResponseEntity<>(serviceReq.accountActivation(otp), HttpStatus.OK);
+    }
 
-//    @PostMapping("/send-otp")//send OTP
+    //    @PostMapping("/send-otp")//send OTP
 //    public Map sendEmailegister(
 //            @Valid @RequestBody ForgotPasswordModel user) {
 //        String message = "Thanks, please check your email for activation.";
@@ -108,32 +63,6 @@ public class RegisterController {
 //        emailSender.sendAsync(found.getUsername(), "Register", template);
 //        return templateResponse.success(message);
 //    }
-
-    @GetMapping("/register-confirm-otp/{token}")
-    public ResponseEntity<Map> saveRegisterManual(@PathVariable(value = "token") String tokenOtp) throws RuntimeException {
-
-
-
-        User user = userRepository.findOneByOTP(tokenOtp);
-        if (null == user) {
-            return new ResponseEntity<Map>(templateResponse.error("OTP tidak ditemukan"), HttpStatus.OK);
-        }
-
-        if(user.isEnabled()){
-            return new ResponseEntity<Map>(templateResponse.error("Account is active, go to login page"), HttpStatus.OK);
-        }
-        String today = simpleStringUtils.convertDateToString(new Date());
-
-        String dateToken = simpleStringUtils.convertDateToString(user.getOtpExpiredDate());
-        if(Long.parseLong(today) > Long.parseLong(dateToken)){
-            return new ResponseEntity<Map>(templateResponse.error("OTP expired. Please get new OTP."), HttpStatus.OK);
-        }
-        //update user
-        user.setEnabled(true);
-        userRepository.save(user);
-
-        return new ResponseEntity<Map>(templateResponse.success("Success, go to login page"), HttpStatus.OK);
-    }
 
 
 }

@@ -29,12 +29,6 @@ public class UserController {
     @Autowired
     public UserService userService;
 
-    @Autowired
-    public UserRepository userRepository;
-
-    @Autowired
-    public SimpleStringUtils simpleStringUtils;
-
 //    @PreAuthorize("hasROLE('ROLE_USER')")
     @PutMapping(value = {"/update", "/update/"})
     public ResponseEntity<Map> update(@Valid @RequestBody UpdateUserModel request) {
@@ -52,13 +46,6 @@ public class UserController {
 //        return new ResponseEntity<>(userService.getById(id), HttpStatus.OK);
 //    }
 
-    @GetMapping("/detail-token")
-    public ResponseEntity<Map> detailProfile(
-            Principal principal
-    ) {
-        Map map = userService.getDetailProfile(principal);
-        return new ResponseEntity<Map>(map, HttpStatus.OK);
-    }
 
     @GetMapping(value = {"/test", "/test/"})
     public ResponseEntity<Map> test() {

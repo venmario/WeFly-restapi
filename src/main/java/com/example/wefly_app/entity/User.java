@@ -37,7 +37,6 @@ public class User extends AbstractDate implements UserDetails, Serializable {
 
     private String city;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dateOfBirth;
 
     private String phoneNumber;

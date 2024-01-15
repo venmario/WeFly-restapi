@@ -44,7 +44,8 @@ public class Oauth2ResourceServerConfiguration extends ResourceServerConfigurerA
                 .disable()
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/v1/user-login/**", "/v1/forget-password/**", "/v1/user-register/**", "/v1/user/**")
+                .antMatchers("/v1/user-login/**", "/v1/forget-password/**", "/v1/user-register/**",
+                        "/v1/user/**", "/oauth/**")
                 .permitAll()
 //                .antMatchers("/v1/user/list", "/v1/user/{id}").hasAnyAuthority("ROLE_ADMIN")
 //                .antMatchers("/v1/user/update").hasAnyAuthority("ROLE_USER")
@@ -62,7 +63,7 @@ public class Oauth2ResourceServerConfiguration extends ResourceServerConfigurerA
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Assuming HMAC for JWT
+        // Using HMAC for JWT
         SecretKey secretKey = new SecretKeySpec(jwtSecretKey.getBytes(StandardCharsets.UTF_8), "HMACSHA256");
         return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }

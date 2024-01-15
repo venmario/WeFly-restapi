@@ -1,4 +1,5 @@
 package com.example.wefly_app.util;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,8 @@ import javax.mail.internet.MimeMessage;
 
 @SuppressWarnings({"WeakerAccess", "ConstantConditions"})
 @Component("emailSender")
+@Slf4j
 public class EmailSender {
-    private final static Logger logger = LoggerFactory.getLogger(EmailSender.class);
 
     @Autowired
     private JavaMailSenderImpl mailSender;
@@ -39,14 +40,11 @@ public class EmailSender {
         if (StringUtils.isEmpty(from)) {
             from = senderEmail;
         }
-        if (StringUtils.isEmpty(from)) {
-            from = "admin@mail.com";
-        }
         boolean success = false;
         try {
-            logger.info("Sending email to: "+email);
-            logger.info("Sending email from: "+from);
-            logger.info("Sending email with subject: "+subject);
+            log.info("Sending email to: " + email);
+            log.info("Sending email from: " + from);
+            log.info("Sending email with subject: " + subject);
 
             MimeMessageHelper helper = new MimeMessageHelper(mime, true);
             helper.setFrom(from,senderName);
@@ -56,20 +54,14 @@ public class EmailSender {
             mailSender.send(mime);
             success = true;
         } catch (Exception e) {
-            logger.error("error: "+e.getMessage());
+            log.error("error: " + e.getMessage());
         }
 
         return success;
     }
 
     public void sendAsync(final String to, final String subject, final String message) {
-        taskExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-
-                send(to, subject, message);
-            }
-        });
+        taskExecutor.execute(() -> send(to, subject, message));
     }
 
 }
