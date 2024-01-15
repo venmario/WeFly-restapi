@@ -1,17 +1,12 @@
 package com.example.wefly_app.controller;
 
-import com.example.wefly_app.repository.UserRepository;
-import com.example.wefly_app.request.LoginGoogleModel;
-import com.example.wefly_app.request.LoginModel;
+import com.example.wefly_app.request.user.LoginGoogleModel;
+import com.example.wefly_app.request.user.LoginModel;
 import com.example.wefly_app.service.UserService;
-import com.example.wefly_app.util.TemplateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;

@@ -17,9 +17,9 @@ public class AirportRegisterModel {
     private String city;
     @NotEmpty(message = "country is required")
     private String country;
-    @NotEmpty(message = "total terminal is required")
-    @Min(value = 1, message = "terminal must be greater than or equal to 1")
-    private Integer totalTerminal;
+//    @NotEmpty(message = "total terminal is required")
+//    @Min(value = 1, message = "terminal must be greater than or equal to 1")
+//    private Integer totalTerminal;
     @NotEmpty(message = "status is required")
     private boolean status;
 }

@@ -1,7 +1,7 @@
 package com.example.wefly_app.controller;
 
-import com.example.wefly_app.request.ManualRegisterModel;
-import com.example.wefly_app.request.OtpRequestModel;
+import com.example.wefly_app.request.user.ManualRegisterModel;
+import com.example.wefly_app.request.user.OtpRequestModel;
 import com.example.wefly_app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

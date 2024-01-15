@@ -12,5 +12,5 @@ package com.example.wefly_app.repository;
 //    Airport checkExistingName(String name);
 //
 //    @Query(value = "select count(a) from Airport a WHERE a.name = :name")
-//    public Long getSimilarName (@Param("name") String name);
+//    Long getSimilarName (@Param("name") String name);
 //}

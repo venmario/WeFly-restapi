@@ -1,26 +1,15 @@
 package com.example.wefly_app.controller;
 
 import com.example.wefly_app.entity.User;
-import com.example.wefly_app.repository.UserRepository;
-import com.example.wefly_app.request.UpdateUserModel;
+import com.example.wefly_app.request.user.UpdateUserModel;
 import com.example.wefly_app.service.UserService;
-import com.example.wefly_app.util.SimpleStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.Predicate;
 import javax.validation.Valid;
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController

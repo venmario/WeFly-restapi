@@ -5,7 +5,7 @@ import com.example.wefly_app.entity.Role;
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;
 import com.example.wefly_app.repository.UserRepository;
-import com.example.wefly_app.request.*;
+import com.example.wefly_app.request.user.*;
 import com.example.wefly_app.service.UserService;
 import com.example.wefly_app.util.*;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
@@ -175,8 +175,8 @@ public class UserServiceImpl implements UserService {
 
             user.setOtp(otp);
             user.setOtpExpiredDate(expirationDate);
-            template = template.replace("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
-            template = template.replace("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
+            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
+            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
             emailSender.sendAsync(user.getUsername(), "Register", template);
             repoUser.save(user);
 
@@ -327,18 +327,18 @@ public class UserServiceImpl implements UserService {
 
             checkUser.setOtp(otp);
             checkUser.setOtpExpiredDate(expirationDate);
-            template = template.replace("\\{\\{PASS_TOKEN}}", otp);
-            template = template.replace("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "UserName"
+            template = template.replaceAll("\\{\\{PASS_TOKEN}}", otp);
+            template = template.replaceAll("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "UserName"
                     :
                     checkUser.getUsername()));
 
             userRepository.save(checkUser);
         } else {
-            template = template.replace("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "" +
+            template = template.replaceAll("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "" +
                     "UserName"
                     :
                     checkUser.getUsername()));
-            template = template.replace("\\{\\{PASS_TOKEN}}", checkUser.getOtp());
+            template = template.replaceAll("\\{\\{PASS_TOKEN}}", checkUser.getOtp());
         }
         emailSender.sendAsync(checkUser.getUsername(), "Chute - Forget Password", template);
         log.info("Forgot Password OTP Request Success");
