@@ -1,7 +1,6 @@
 package com.example.wefly_app.controller;
 
 import com.example.wefly_app.request.user.ManualRegisterModel;
-import com.example.wefly_app.request.user.OtpRequestModel;
 import com.example.wefly_app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/user-register/")
@@ -23,8 +22,8 @@ public class RegisterController {
     }
 
     @GetMapping("/register-confirm-otp/{token}")
-    public ResponseEntity<Map> saveRegisterManual(@PathVariable(value = "token") OtpRequestModel otp) {
-        return new ResponseEntity<>(serviceReq.accountActivation(otp), HttpStatus.OK);
+    public ResponseEntity<Map> saveRegisterManual(@PathVariable(value = "token") String request) {
+        return new ResponseEntity<>(serviceReq.accountActivation(request), HttpStatus.OK);
     }
 
     //    @PostMapping("/send-otp")//send OTP

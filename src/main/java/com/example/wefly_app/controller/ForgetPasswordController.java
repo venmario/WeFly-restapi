@@ -1,8 +1,7 @@
 package com.example.wefly_app.controller;
 
-import com.example.wefly_app.request.user.ForgotPasswordModel;
 import com.example.wefly_app.request.user.ChangePasswordModel;
-import com.example.wefly_app.request.user.OtpRequestModel;
+import com.example.wefly_app.request.user.ForgotPasswordModel;
 import com.example.wefly_app.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +34,8 @@ public class ForgetPasswordController {
         return new ResponseEntity<>(serviceReq.changePassword(request), HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/check-token/{otp}")
-    public ResponseEntity<Map> cheKTOkenValid(@PathVariable(value = "otp") OtpRequestModel request) {
+    @PostMapping("/check-token/{request}")
+    public ResponseEntity<Map> cheKTOkenValid(@PathVariable(value = "request") String request) {
         return new ResponseEntity<>(serviceReq.checkOtpValidity(request), HttpStatus.OK);
     }
 

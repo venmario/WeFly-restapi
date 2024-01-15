@@ -190,9 +190,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<Object, Object> accountActivation(OtpRequestModel request) {
+    public Map<Object, Object> accountActivation(String request) {
         log.info("Account Activation");
-        User user = userRepository.findOneByOTP(request.getOtp());
+        if (request == null) {
+            throw new ValidationException("OTP is required");
+        }
+        User user = userRepository.findOneByOTP(request);
         if (user == null) {
             log.error("Error account activation = OTP is not valid");
             throw new ValidationException("OTP is not valid");
@@ -210,6 +213,9 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setEnabled(true);
+        user.setOtp(null);
+        user.setOtpExpiredDate(null);
+        user.setUpdatedDate(new Date());
         userRepository.save(user);
         log.info("Account Activation Success");
         return templateResponse.success("Account Activation Success");
@@ -340,7 +346,7 @@ public class UserServiceImpl implements UserService {
                     checkUser.getUsername()));
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", checkUser.getOtp());
         }
-        emailSender.sendAsync(checkUser.getUsername(), "Chute - Forget Password", template);
+        emailSender.sendAsync(checkUser.getUsername(), "WeFly - Forget Password", template);
         log.info("Forgot Password OTP Request Success");
         return templateResponse.success("Please check email for reset password");
     }
@@ -366,6 +372,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(request.getNewPassword().replaceAll("\\s+", "")));
             user.setOtpExpiredDate(null);
             user.setOtp(null);
+            user.setUpdatedDate(new Date());
 
             userRepository.save(user);
             log.info("change password success");
@@ -377,10 +384,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<Object, Object> checkOtpValidity(OtpRequestModel request) {
+    public Map<Object, Object> checkOtpValidity(String request) {
         try {
             log.info("Check OTP Validity");
-            User user = userRepository.findOneByOTP(request.getOtp());
+            if (request == null) throw new ValidationException("OTP is required");
+            User user = userRepository.findOneByOTP(request);
             if (user == null) throw new ValidationException("OTP is not valid");
 
             log.info("Check OTP Validity Success");
@@ -403,13 +411,32 @@ public class UserServiceImpl implements UserService {
                 log.error("Update User Error: unidentified, user not found");
                 throw new IncorrectUserCredentialException("unidentified token user");
             }
-            if (!request.getFullName().isEmpty()) checkDataDBUser.get().setFullName(request.getFullName());
-            if (!request.getCity().isEmpty()) checkDataDBUser.get().setCity(request.getCity());
-            if (request.getDateOfBirth() != null) checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
-            if (!request.getPhoneNumber().isEmpty()) checkDataDBUser.get().setPhoneNumber(request.getPhoneNumber());
+            int count = 0;
+            if (!request.getFullName().isEmpty()) {
+                checkDataDBUser.get().setFullName(request.getFullName());
+                count++;
+            }
+            if (!request.getCity().isEmpty()) {
+                checkDataDBUser.get().setCity(request.getCity());
+                count++;
+            }
+            if (request.getDateOfBirth() != null) {
+                checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
+                count++;
+            }
+            if (!request.getPhoneNumber().isEmpty()) {
+                checkDataDBUser.get().setPhoneNumber(request.getPhoneNumber());
+                count++;
+            }
+            if (count > 0) {
+                checkDataDBUser.get().setUpdatedDate(new Date());
+                log.info("User Updated");
+                return templateResponse.success(userRepository.save(checkDataDBUser.get()));
+            } else {
+                log.info("Update User : no data updated");
+                return templateResponse.success("no data updated");
+            }
 
-            log.info("Update User Success");
-            return templateResponse.success(userRepository.save(checkDataDBUser.get()));
         } catch (Exception e) {
             log.error("Update User Error: " + e.getMessage());
             throw e;
