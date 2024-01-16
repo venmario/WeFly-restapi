@@ -17,7 +17,7 @@ public class ManualRegisterModel {
     @NotEmpty(message = "full name is required.")
     private String fullName;
     @NotEmpty(message = "phone number is required")
-    @Pattern(regexp = "^[0-9\\-\\s]+$", message = "Phone number must contain only numbers, spaces, or dashes")
+    @Pattern(regexp = "^\\d+$", message = "Phone number must contain only numbers")
     private String phoneNumber;
     @NotNull(message = "date of birth is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")

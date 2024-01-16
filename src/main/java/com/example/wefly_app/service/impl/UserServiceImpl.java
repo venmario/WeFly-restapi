@@ -78,7 +78,6 @@ public class UserServiceImpl implements UserService {
     public PasswordValidatorUtil passwordValidatorUtil = new PasswordValidatorUtil();
 
 
-    @Transactional
     @Override
     public Map login(LoginModel loginModel) {
         log.info("login");
@@ -189,6 +188,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> accountActivation(String request) {
         log.info("Account Activation");
@@ -285,7 +285,7 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
-                //save token
+
     @Transactional
     public void registerByGoogle(RegisterGoogleModel objModel) {
         log.info("Register By Google");
@@ -309,6 +309,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> forgotPasswordRequest(ForgotPasswordModel request) {
         log.info("Forgot Password OTP Request");
@@ -351,6 +352,7 @@ public class UserServiceImpl implements UserService {
         return templateResponse.success("Please check email for reset password");
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> changePassword(ChangePasswordModel request) {
         log.info("Change Password");
@@ -407,6 +409,7 @@ public class UserServiceImpl implements UserService {
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             Long userId = (Long) attribute.getRequest().getAttribute("userId");
             Optional<User> checkDataDBUser = userRepository.findById(userId);
+            log.info("Update User : " + userId);
             if (!checkDataDBUser.isPresent()) {
                 log.error("Update User Error: unidentified, user not found");
                 throw new IncorrectUserCredentialException("unidentified token user");
@@ -443,6 +446,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> delete(User request) {
         try {
