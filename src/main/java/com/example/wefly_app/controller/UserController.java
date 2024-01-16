@@ -21,7 +21,7 @@ public class UserController {
 //    @PreAuthorize("hasROLE('ROLE_USER')")
     @PutMapping(value = {"/update", "/update/"})
     public ResponseEntity<Map> update(@Valid @RequestBody UpdateUserModel request) {
-        return new ResponseEntity<Map>(userService.update(request), HttpStatus.OK);
+        return new ResponseEntity<>(userService.update(request), HttpStatus.OK);
     }
 
     @DeleteMapping(value = {"/delete", "/delete/"})

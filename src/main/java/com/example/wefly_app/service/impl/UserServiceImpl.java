@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.persistence.EntityExistsException;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
@@ -65,10 +66,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public SimpleStringUtils simpleStringUtils;
 
-    @Value("${expired.token.password.minute:}")//FILE_SHOW_RUL
+    @Value("${OTP_EXPIRED_TIME}")//FILE_SHOW_RUL
     private int expiredToken;
 
-    @Value("${AUTHURL:}")//FILE_SHOW_RUL
+    @Value("${AUTHURL}")//FILE_SHOW_RUL
     private String AUTHURL;
 
     @Autowired
@@ -78,15 +79,11 @@ public class UserServiceImpl implements UserService {
     public PasswordValidatorUtil passwordValidatorUtil = new PasswordValidatorUtil();
 
 
-    @Transactional
     @Override
-    public Map login(LoginModel loginModel) {
+    public Map<String, Object> login(LoginModel loginModel) {
         log.info("login");
         try {
-            Map<String, Object> map = new HashMap<>();
-
             User checkUser = userRepository.findOneByUsername(loginModel.getEmail());
-
             if (checkUser == null) {
                 throw new IncorrectUserCredentialException("Login credential don't match an account in our system");
             }
@@ -98,36 +95,8 @@ public class UserServiceImpl implements UserService {
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 throw new IncorrectUserCredentialException("Login credential don't match an account in our system");
             }
-            String url = baseUrl + "/oauth/token?username=" + loginModel.getEmail() +
-                    "&password=" + loginModel.getPassword() +
-                    "&grant_type=password" +
-                    "&client_id=my-client-web" +
-                    "&client_secret=password";
-            ResponseEntity<Map<Object, Object>> response = restTemplateBuilder.build().exchange(url, HttpMethod.POST, null, new
-                    ParameterizedTypeReference<Map<Object, Object>>() {
-                    });
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                //save token
-//                checkUser.setAccessToken(response.getBody().get("access_token").toString());
-//                checkUser.setRefreshToken(response.getBody().get("refresh_token").toString());
-//                userRepository.save(checkUser);
-
-                map.put("access_token", response.getBody().get("access_token"));
-                map.put("token_type", response.getBody().get("token_type"));
-                map.put("refresh_token", response.getBody().get("refresh_token"));
-                map.put("expires_in", response.getBody().get("expires_in"));
-                map.put("scope", response.getBody().get("scope"));
-                map.put("jti", response.getBody().get("jti"));
-                map.put("message","Success");
-                map.put("code",200);
-
-                log.info("login success!");
-                return map;
-            } else {
-                log.error("Error while getting token from server");
-                throw new SpringTokenServerException("Error while getting token from server");
-            }
+            return getToken(loginModel.getEmail(), loginModel.getPassword());
         } catch (Exception e) {
             log.error(e.getMessage());
             throw e;
@@ -142,7 +111,7 @@ public class UserServiceImpl implements UserService {
             User checkExistingUsername = userRepository.checkExistingUsername(request.getEmail());
             if (null != checkExistingUsername) {
                 log.error("Error registerManual = Email already registered");
-                throw new ValidationException("Email already registered");
+                throw new EntityExistsException("Email already registered");
             }
             String[] roleNames = {"ROLE_USER", "ROLE_USER_O", "ROLE_USER_OD"}; // admin
             User user = new User();
@@ -189,6 +158,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> accountActivation(String request) {
         log.info("Account Activation");
@@ -223,7 +193,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public Map<Object, Object> loginByGoogle(LoginGoogleModel request) throws IOException {
+    public Map<String, Object> loginByGoogle(LoginGoogleModel request) throws IOException {
         log.info("Login By Google");
         try {
             GoogleCredential credential = new GoogleCredential().setAccessToken(request.getToken());
@@ -253,39 +223,14 @@ public class UserServiceImpl implements UserService {
                 user.setProvider(Provider.GOOGLE);
                 userRepository.save(user);
             }
-            String url = AUTHURL + "?username=" + profile.getEmail() +
-                    "&password=" + pass +
-                    "&grant_type=password" +
-                    "&client_id=my-client-web" +
-                    "&client_secret=password";
-            ResponseEntity<Map<String, Object>> response123 = restTemplateBuilder.build().exchange(url, HttpMethod.POST, null, new
-                    ParameterizedTypeReference<Map<String, Object>>() {
-                    });
 
-            Map<Object, Object> map123 = new HashMap<>();
-            if (response123.getStatusCode() == HttpStatus.OK) {
-
-                map123.put("access_token", Objects.requireNonNull(response123.getBody()).get("access_token"));
-                map123.put("token_type", response123.getBody().get("token_type"));
-                map123.put("refresh_token", response123.getBody().get("refresh_token"));
-                map123.put("expires_in", response123.getBody().get("expires_in"));
-                map123.put("scope", response123.getBody().get("scope"));
-                map123.put("jti", response123.getBody().get("jti"));
-                map123.put("status", 200);
-                map123.put("message", "success");
-                map123.put("type", "login");
-                map123.put("user", user);
-                return map123;
-            } else {
-                log.error("Error while getting token from server");
-                throw new SpringTokenServerException("Error while getting token from server");
-            }
+            return getToken(profile.getEmail(), pass);
         } catch (Exception e) {
             log.error("Error loginByGoogle = ", e);
             throw e;
         }
     }
-                //save token
+
     @Transactional
     public void registerByGoogle(RegisterGoogleModel objModel) {
         log.info("Register By Google");
@@ -309,6 +254,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> forgotPasswordRequest(ForgotPasswordModel request) {
         log.info("Forgot Password OTP Request");
@@ -351,6 +297,7 @@ public class UserServiceImpl implements UserService {
         return templateResponse.success("Please check email for reset password");
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> changePassword(ChangePasswordModel request) {
         log.info("Change Password");
@@ -407,6 +354,7 @@ public class UserServiceImpl implements UserService {
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             Long userId = (Long) attribute.getRequest().getAttribute("userId");
             Optional<User> checkDataDBUser = userRepository.findById(userId);
+            log.info("Update User : " + userId);
             if (!checkDataDBUser.isPresent()) {
                 log.error("Update User Error: unidentified, user not found");
                 throw new IncorrectUserCredentialException("unidentified token user");
@@ -443,6 +391,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> delete(User request) {
         try {
@@ -480,18 +429,39 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    public Map<String, Object> getToken(String email, String password) {
+        log.info("Request token to spring server");
+        String url = AUTHURL + "?username=" + email +
+                "&password=" + password +
+                "&grant_type=password" +
+                "&client_id=my-client-web" +
+                "&client_secret=password";
+        ResponseEntity<Map<String, Object>> response123 = restTemplateBuilder.build().exchange(url,
+                HttpMethod.POST, null, new ParameterizedTypeReference<Map<String, Object>>() {
+                });
 
-//    @Override
-//    public Map<Object, Object> getIdByUserName(String username) {
-//        try {
-//            log.info("Get Id");
-//            User user = userRepository.findOneByOTP(username);
-//            if (user == null) return templateResponse.error("User not found");
-//            return templateResponse.success(user);
-//        } catch (Exception e) {
-//            return templateResponse.error(e);
-//        }
-//    }
+        Map<String, Object> response = new HashMap<>();
+        if (response123.getStatusCode() == HttpStatus.OK) {
+            //save token
+//                checkUser.setAccessToken(response.getBody().get("access_token").toString());
+//                checkUser.setRefreshToken(response.getBody().get("refresh_token").toString());
+//                userRepository.save(checkUser);
+            response.put("access_token", Objects.requireNonNull(response123.getBody()).get("access_token"));
+            response.put("token_type", response123.getBody().get("token_type"));
+            response.put("refresh_token", response123.getBody().get("refresh_token"));
+            response.put("expires_in", response123.getBody().get("expires_in"));
+            response.put("scope", response123.getBody().get("scope"));
+            response.put("jti", response123.getBody().get("jti"));
+            response.put("status", 200);
+            response.put("message", "success");
+            response.put("type", "login");
+            log.info("Request Token Succeed");
+            return response;
+        } else {
+            log.error("Error while getting token from server");
+            throw new SpringTokenServerException("Error while getting token from server");
+        }
+    }
 
 }
 

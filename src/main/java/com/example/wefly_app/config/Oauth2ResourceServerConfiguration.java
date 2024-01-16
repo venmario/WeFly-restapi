@@ -45,7 +45,7 @@ public class Oauth2ResourceServerConfiguration extends ResourceServerConfigurerA
                 .antMatcher("/**")
                 .authorizeRequests()
                 .antMatchers("/v1/user-login/**", "/v1/forget-password/**", "/v1/user-register/**",
-                        "/v1/user/**", "/oauth/**")
+                        "/v1/user/**", "/oauth/**", "/v1/airport/**")
                 .permitAll()
 //                .antMatchers("/v1/user/list", "/v1/user/{id}").hasAnyAuthority("ROLE_ADMIN")
 //                .antMatchers("/v1/user/update").hasAnyAuthority("ROLE_USER")

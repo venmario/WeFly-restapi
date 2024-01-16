@@ -12,6 +12,6 @@ public class UpdateUserModel {
     private String city;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dateOfBirth;
-    @Pattern(regexp = "^[0-9\\-\\s]+$", message = "Phone number must contain only numbers, spaces, or dashes")
+    @Pattern(regexp = "^\\d+$", message = "Phone number must contain only numbers")
     private String phoneNumber;
 }

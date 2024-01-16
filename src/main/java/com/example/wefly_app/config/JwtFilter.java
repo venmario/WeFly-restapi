@@ -31,6 +31,7 @@ public class JwtFilter implements Filter {
             Jwt jwt = (Jwt) authentication.getPrincipal();
             try {
                 request.setAttribute("userId", jwt.getClaim("id"));
+                request.setAttribute("test", jwt.getClaimAsString("user_name"));
             } catch (Exception e) {
                 log.error("Error JWT filter: " + e);
                 templateResponse.error("token data process error : " + e);

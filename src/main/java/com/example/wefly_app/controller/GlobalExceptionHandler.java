@@ -1,10 +1,7 @@
 package com.example.wefly_app.controller;
 
 import com.example.wefly_app.util.TemplateResponse;
-import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
-import com.example.wefly_app.util.exception.SpringTokenServerException;
-import com.example.wefly_app.util.exception.UserDisabledException;
-import com.example.wefly_app.util.exception.ValidationException;
+import com.example.wefly_app.util.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +61,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Object> handleValidationException(ValidationException ex) {
         return new ResponseEntity<>(templateResponse.error(ex.getMessage(), 400), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<Object> handleEntityExistsException(EntityExistsException ex) {
+        return new ResponseEntity<>(templateResponse.error(ex.getMessage(), 409), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
+        return new ResponseEntity<>(templateResponse.error(ex.getMessage(), 404), HttpStatus.NOT_FOUND);
     }
 
 }
