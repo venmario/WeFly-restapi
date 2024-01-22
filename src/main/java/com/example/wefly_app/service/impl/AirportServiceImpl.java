@@ -2,9 +2,9 @@ package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.Airport;
 import com.example.wefly_app.repository.AirportRepository;
-import com.example.wefly_app.request.AirportDeleteModel;
-import com.example.wefly_app.request.AirportRegisterModel;
-import com.example.wefly_app.request.AirportUpdateModel;
+import com.example.wefly_app.request.airport.AirportDeleteModel;
+import com.example.wefly_app.request.airport.AirportRegisterModel;
+import com.example.wefly_app.request.airport.AirportUpdateModel;
 import com.example.wefly_app.service.AirportService;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
@@ -23,12 +23,19 @@ import java.util.*;
 @Service
 @Slf4j
 public class AirportServiceImpl implements AirportService {
+    private final AirportRepository airportRepository;
+    private final TemplateResponse templateResponse;
+    private final SimpleStringUtils simpleStringUtils;
+
     @Autowired
-    private AirportRepository airportRepository;
-    @Autowired
-    private TemplateResponse templateResponse;
-    @Autowired
-    private SimpleStringUtils simpleStringUtils;
+    public AirportServiceImpl(AirportRepository airportRepository,
+                              TemplateResponse templateResponse,
+                              SimpleStringUtils simpleStringUtils) {
+        this.airportRepository = airportRepository;
+        this.templateResponse = templateResponse;
+        this.simpleStringUtils = simpleStringUtils;
+    }
+
     @Override
     public Map<Object, Object> save(AirportRegisterModel request) {
         try {

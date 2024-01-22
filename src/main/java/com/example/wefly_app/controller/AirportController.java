@@ -1,14 +1,13 @@
 package com.example.wefly_app.controller;
 
-import com.example.wefly_app.request.AirportDeleteModel;
-import com.example.wefly_app.request.AirportRegisterModel;
-import com.example.wefly_app.request.AirportUpdateModel;
+import com.example.wefly_app.request.airport.AirportDeleteModel;
+import com.example.wefly_app.request.airport.AirportRegisterModel;
+import com.example.wefly_app.request.airport.AirportUpdateModel;
 import com.example.wefly_app.service.AirportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;

@@ -1,4 +1,4 @@
-package com.example.wefly_app.request;
+package com.example.wefly_app.request.airport;
 
 import lombok.Data;
 

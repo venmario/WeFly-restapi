@@ -37,4 +37,5 @@ public class Flight {
     public boolean getStatus(){
         return this.status;
     }
+    private BigDecimal basePrice;
 }
