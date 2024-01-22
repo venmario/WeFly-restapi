@@ -1,26 +1,41 @@
 package com.example.wefly_app.entity;
 
 import lombok.Data;
-import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @Entity
-@Table
+@Table(name = "flight")
 @Where(clause = "deleted_date is null")
-public class Flight extends AbstractDate implements Serializable {
+public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-//    private Airport departure;
-//    private Airport arrival;
-    private BigDecimal basePrice;
+    private Long id;
+    private String flightNumber;
+
     @ManyToOne
-    @JoinColumn(name = "airline_id", foreignKey = @ForeignKey(name = "airline_id_constraint"))
-    private Airline airline;
+    @JoinColumn(name = "departure_airport_id")
+    private Airport departureAirport;
+
+    @ManyToOne
+    @JoinColumn(name = "arrival_airport_id")
+    private Airport arrivalAirport;
+
+    @ManyToOne
+    @JoinColumn(name = "airplane_id")
+    private Airplane airplane;
+
+    private String departureDate;
+    private String arrivalDate;
+    private String departureTime;
+    private String arrivalTime;
+
+    private boolean status;
+
+    public boolean getStatus(){
+        return this.status;
+    }
+    private BigDecimal basePrice;
 }
