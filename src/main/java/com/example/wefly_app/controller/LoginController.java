@@ -26,7 +26,7 @@ public class LoginController {
     }
 
     @PostMapping({"/signin_google/{accessToken}", "/signin_google/{accessToken}/"})
-    public ResponseEntity<Map> loginByGoogle(@Valid @PathVariable ("accessToken")LoginGoogleModel request) throws IOException {
+    public ResponseEntity<Map> loginByGoogle(@PathVariable ("accessToken")String request) throws IOException {
         return new ResponseEntity<>(serviceReq.loginByGoogle(request), HttpStatus.OK);
     }
 

@@ -5,13 +5,14 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import javax.validation.constraints.Max;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Entity
 @Table(name = "airport")
 @Where(clause = "deleted_date is null")
-public class Airport extends AbstractDate {
+public class Airport extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
