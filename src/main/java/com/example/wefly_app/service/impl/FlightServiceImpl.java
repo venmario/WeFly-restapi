@@ -1,6 +1,10 @@
 package com.example.wefly_app.service.impl;
 
+import com.example.wefly_app.entity.Airplane;
+import com.example.wefly_app.entity.Airport;
 import com.example.wefly_app.entity.Flight;
+import com.example.wefly_app.repository.AirplaneRepository;
+import com.example.wefly_app.repository.AirportRepository;
 import com.example.wefly_app.repository.FlightRepository;
 import com.example.wefly_app.request.flight.FlightDeleteModel;
 import com.example.wefly_app.request.flight.FlightRegisterModel;
@@ -13,7 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -24,22 +31,37 @@ public class FlightServiceImpl implements FlightService {
     private TemplateResponse templateResponse;
     @Autowired
     private SimpleStringUtils simpleStringUtils;
-    
+    @Autowired
+    private AirportRepository airportRepository;
+    @Autowired
+    private AirplaneRepository airplaneRepository;
     
     @Override
     public Map<Object, Object> save(FlightRegisterModel request) {
         try {
             log.info("Save New Flight");
-            if (flightRepository.checkExistingFlightNumber(request.getFlightNumber()) != null){
-                throw new EntityExistsException("Flight with number " + request.getFlightNumber() + " already exists");
-            }
             Flight flight = new Flight();
-            flight.setFlightNumber(request.getFlightNumber());
+            Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
+            if (!checkDataDBDepartureAirport.isPresent())
+                throw new EntityNotFoundException("Departure Airport with id " + request.getDepartureAirportId() + " not found");
+            Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
+            if (!checkDataDBArrivalAirport.isPresent())
+                throw new EntityNotFoundException("Arrival Airport with id " + request.getArrivalAirportId() + " not found");
+            Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplane());
+            if (!checkDataDBAirplane.isPresent())
+                throw new EntityNotFoundException("Airplane with id " + request.getAirplane() + " not found");
             flight.setDepartureDate(request.getDepartureDate());
             flight.setArrivalDate(request.getArrivalDate());
-            flight.setDepartureAirport(request.getDepartureAirport());
-            flight.setArrivalAirport(request.getArrivalAirport());
-            flight.setAirplane(request.getAirplane());
+            flight.setDepartureAirport(checkDataDBDepartureAirport.get());
+            flight.setArrivalAirport(checkDataDBArrivalAirport.get());
+            flight.setAirplane(checkDataDBAirplane.get());
+            flight.setBasePriceAdult(request.getBasePrice());
+            flight.setBasePriceChild(request.getBasePrice().multiply(
+                    checkDataDBAirplane.get().getAirline().getDiscountChild().multiply(BigDecimal.valueOf(0.01)))
+            );
+            flight.setBasePriceInfant(request.getBasePrice().multiply(
+                    checkDataDBAirplane.get().getAirline().getDiscountInfant().multiply(BigDecimal.valueOf(0.01)))
+            );
 
             log.info("Flight Saved");
             return templateResponse.success(flightRepository.save(flight));
@@ -53,37 +75,32 @@ public class FlightServiceImpl implements FlightService {
     public Map<Object, Object> update(FlightUpdateModel request, Long id) {
         try {
             log.info("Update Flight");
-            Flight checkDataDBFlight = flightRepository.checkExistingId(id);
-            if (checkDataDBFlight == null) throw new EntityExistsException("Flight with id " + id + " not found");
+            Optional<Flight> checkDataDBFlight = flightRepository.findById(id);
+            if (!checkDataDBFlight.isPresent()) throw new EntityNotFoundException("Flight with id " + id + " not found");
             int count = 0;
-            Flight flight = checkDataDBFlight;
-            if (request.getFlightNumber() != null ) {
-                flight.setFlightNumber(request.getFlightNumber());
-                count++;
-            }
             if (request.getDepartureDate() != null) {
-                flight.setDepartureDate(request.getDepartureDate());
+                checkDataDBFlight.get().setDepartureDate(request.getDepartureDate());
                 count++;
             }
             if (request.getArrivalDate() != null) {
-                flight.setArrivalDate(request.getArrivalDate());
+                checkDataDBFlight.get().setArrivalDate(request.getArrivalDate());
                 count++;
             }
             if (request.getDepartureAirport() != null) {
-                flight.setDepartureAirport(request.getDepartureAirport());
+                checkDataDBFlight.get().setDepartureAirport(request.getDepartureAirport());
                 count++;
             }
             if (request.getArrivalAirport() != null) {
-                flight.setArrivalAirport(request.getArrivalAirport());
+                checkDataDBFlight.get().setArrivalAirport(request.getArrivalAirport());
                 count++;
             }
             if (request.getAirplane() != null) {
-                flight.setAirplane(request.getAirplane());
+                checkDataDBFlight.get().setAirplane(request.getAirplane());
                 count++;
             }
             if (count == 0) throw new IllegalArgumentException("No data to update");
             log.info("Flight Updated");
-            return templateResponse.success(flightRepository.save(flight));
+            return templateResponse.success(flightRepository.save(checkDataDBFlight.get()));
         } catch (Exception e) {
             log.error("Error Updating Flight", e);
             throw e;

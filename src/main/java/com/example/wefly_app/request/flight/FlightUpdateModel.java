@@ -9,8 +9,6 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class FlightUpdateModel {
-    @NotEmpty(message = "flight number is required")
-    private String flightNumber;
     @NotEmpty(message = "departure airport is required")
     private Airport departureAirport;
     @NotEmpty(message = "arrival airport is required")

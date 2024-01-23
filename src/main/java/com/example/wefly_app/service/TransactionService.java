@@ -1,7 +1,11 @@
 package com.example.wefly_app.service;
 
+import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 
 public interface TransactionService {
@@ -10,4 +14,9 @@ public interface TransactionService {
     Map<Object, Object> getById(Long request);
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType
             , String startDate, String endDate, String status);
+    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
+    Map<Object, Object> savePayment(PaymentRegisterModel request);
+    Map<Object, Object> savePaymentProof(MultipartFile file, Long paymentId) throws IOException;
+    Resource getPaymentProof(Long paymentId);
+
 }

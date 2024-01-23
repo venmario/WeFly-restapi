@@ -24,55 +24,55 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
-@Slf4j
-public class FileServiceImpl implements FileService {
-    @Value("${app.upload.payment.proof}")//FILE_SHOW_RUL
-    private String BASE_UPLOAD_FOLDER;
-    @Autowired
-    private UserRepository userRepository;
-    @Override
-    public Map<Object, Object> save(MultipartFile file) throws IOException {
-        Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
-        String strDate = formatter.format(date);
-
-        String nameFormat= file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") );
-        if(nameFormat.isEmpty()){
-            nameFormat = ".png";
-        }
-        String userFolder = BASE_UPLOAD_FOLDER + "user_" + 1 + "/";
-        Path userFolderPath = Paths.get(userFolder);
-        if (Files.notExists(userFolderPath)) {
-            Files.createDirectories(userFolderPath);
-        }
-        String fileName = userFolder + strDate + nameFormat;
-        Path to = Paths.get(fileName);
-        Map<Object, Object> map = new HashMap<>();
-
-        try {
-            Files.copy(file.getInputStream(), to);
-        } catch (Exception e) {
-            log.error("Error while saving file", e);
-            map.put("file name", fileName);
-            map.put("file download uri", null);
-            map.put("file type", file.getContentType());
-            map.put("file size", file.getSize());
-            map.put("status", e.getMessage());
-            return map;
-        }
-
-        map.put("file name", fileName);
-        map.put("file download uri", null);
-        map.put("file type", file.getContentType());
-        map.put("file size", file.getSize());
-        map.put("status", "success");
-        return map;
-    }
-
-    @Override
-    public Map<Object, Object> get(Long request, Long transactionId) {
-
-        return null;
-    }
-}
+//@Service
+//@Slf4j
+//public class FileServiceImpl implements FileService {
+//    @Value("${app.upload.payment.proof}")//FILE_SHOW_RUL
+//    private String BASE_UPLOAD_FOLDER;
+//    @Autowired
+//    private UserRepository userRepository;
+//    @Override
+//    public Map<Object, Object> save(MultipartFile file) throws IOException {
+//        Date date = new Date();
+//        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
+//        String strDate = formatter.format(date);
+//
+//        String nameFormat= file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") );
+//        if(nameFormat.isEmpty()){
+//            nameFormat = ".png";
+//        }
+//        String userFolder = BASE_UPLOAD_FOLDER + "user_" + 1 + "/";
+//        Path userFolderPath = Paths.get(userFolder);
+//        if (Files.notExists(userFolderPath)) {
+//            Files.createDirectories(userFolderPath);
+//        }
+//        String fileName = userFolder + strDate + nameFormat;
+//        Path to = Paths.get(fileName);
+//        Map<Object, Object> map = new HashMap<>();
+//
+//        try {
+//            Files.copy(file.getInputStream(), to);
+//        } catch (Exception e) {
+//            log.error("Error while saving file", e);
+//            map.put("file name", fileName);
+//            map.put("file download uri", null);
+//            map.put("file type", file.getContentType());
+//            map.put("file size", file.getSize());
+//            map.put("status", e.getMessage());
+//            return map;
+//        }
+//
+//        map.put("file name", fileName);
+//        map.put("file download uri", null);
+//        map.put("file type", file.getContentType());
+//        map.put("file size", file.getSize());
+//        map.put("status", "success");
+//        return map;
+//    }
+//
+//    @Override
+//    public Map<Object, Object> get(Long request, Long transactionId) {
+//
+//        return null;
+//    }
+//}

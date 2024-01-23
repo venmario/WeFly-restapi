@@ -4,16 +4,18 @@ import lombok.Data;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @Entity
 @Table(name = "flight")
 @Where(clause = "deleted_date is null")
-public class Flight {
+public class Flight extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String flightNumber;
+//    private String flightNumber;
 
     @ManyToOne
     @JoinColumn(name = "departure_airport_id")
@@ -31,11 +33,10 @@ public class Flight {
     private String arrivalDate;
     private String departureTime;
     private String arrivalTime;
-
-    private boolean status;
-
-    public boolean getStatus(){
-        return this.status;
-    }
-    private BigDecimal basePrice;
+    @Column(name = "base_price_adult", precision = 14, scale = 2)
+    private BigDecimal basePriceAdult;
+    @Column(name = "base_price_child", precision = 14, scale = 2)
+    private BigDecimal basePriceChild;
+    @Column(name = "base_price_infant", precision = 14, scale = 2)
+    private BigDecimal basePriceInfant;
 }

@@ -10,14 +10,4 @@ import java.math.BigDecimal;
 public class TransactionDetailSaveModel {
     @NotNull(message = "flight id must not null")
     private Long flightId;
-
-    @NotNull
-    @Column(name = "total_price_adult", precision = 14, scale = 2)
-    private BigDecimal totalPriceAdult;
-    @NotNull
-    @Column(name = "total_price_child", precision = 14, scale = 2)
-    private BigDecimal totalPriceChild;
-    @NotNull
-    @Column(name = "total_price_infant", precision = 14, scale = 2)
-    private BigDecimal totalPriceInfant;
 }

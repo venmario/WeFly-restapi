@@ -20,7 +20,7 @@ public class Transaction extends AbstractDate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

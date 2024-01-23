@@ -16,7 +16,7 @@ public class Payment extends AbstractDate {
     private Long id;
     private String paymentProof;
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
+    private PaymentStatus status = PaymentStatus.AWAITING_PAYMENT;
     @JsonManagedReference
     @OneToOne
     @JoinColumn(name = "transaction_id")
