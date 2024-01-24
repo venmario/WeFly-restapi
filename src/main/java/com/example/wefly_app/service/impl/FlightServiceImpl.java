@@ -14,42 +14,56 @@ import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
 public class FlightServiceImpl implements FlightService {
-    @Autowired
-    private FlightRepository flightRepository;
-    @Autowired
-    private TemplateResponse templateResponse;
-    @Autowired
+
+    private final FlightRepository flightRepository;
+    private final TemplateResponse templateResponse;
     private SimpleStringUtils simpleStringUtils;
+    private final AirportRepository airportRepository;
+    private final AirplaneRepository airplaneRepository;
     @Autowired
-    private AirportRepository airportRepository;
-    @Autowired
-    private AirplaneRepository airplaneRepository;
+    public FlightServiceImpl (FlightRepository flightRepository, TemplateResponse templateResponse,
+                                SimpleStringUtils simpleStringUtils, AirportRepository airportRepository,
+                                AirplaneRepository airplaneRepository){
+        this.flightRepository = flightRepository;
+        this.templateResponse = templateResponse;
+        this.simpleStringUtils = simpleStringUtils;
+        this.airportRepository = airportRepository;
+        this.airplaneRepository = airplaneRepository;
+    }
     
     @Override
     public Map<Object, Object> save(FlightRegisterModel request) {
         try {
             log.info("Save New Flight");
-            Flight flight = new Flight();
             Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
-            if (!checkDataDBDepartureAirport.isPresent())
-                throw new EntityNotFoundException("Departure Airport with id " + request.getDepartureAirportId() + " not found");
             Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
-            if (!checkDataDBArrivalAirport.isPresent())
-                throw new EntityNotFoundException("Arrival Airport with id " + request.getArrivalAirportId() + " not found");
-            Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplane());
-            if (!checkDataDBAirplane.isPresent())
-                throw new EntityNotFoundException("Airplane with id " + request.getAirplane() + " not found");
+            Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplaneId());
+            String missingEntities = Stream.of(
+                    !checkDataDBAirplane.isPresent() ? "Airplane with id " + request.getAirplaneId() : null,
+                    !checkDataDBArrivalAirport.isPresent() ? "Arrival Airport with id " + request.getArrivalAirportId() : null,
+                    !checkDataDBDepartureAirport.isPresent() ? "Departure Airport with id " + request.getDepartureAirportId() : null
+            ).filter(Objects::nonNull).collect(Collectors.joining(","));
+            if (!missingEntities.isEmpty()) throw new EntityNotFoundException(missingEntities + " not found");
+            Flight flight = new Flight();
             flight.setDepartureDate(request.getDepartureDate());
             flight.setArrivalDate(request.getArrivalDate());
             flight.setDepartureAirport(checkDataDBDepartureAirport.get());
@@ -76,7 +90,7 @@ public class FlightServiceImpl implements FlightService {
         try {
             log.info("Update Flight");
             Optional<Flight> checkDataDBFlight = flightRepository.findById(id);
-            if (!checkDataDBFlight.isPresent()) throw new EntityNotFoundException("Flight with id " + id + " not found");
+            if (!checkDataDBFlight.isPresent()) throw new EntityExistsException("Flight with id " + id + " not found");
             int count = 0;
             if (request.getDepartureDate() != null) {
                 checkDataDBFlight.get().setDepartureDate(request.getDepartureDate());
@@ -86,17 +100,32 @@ public class FlightServiceImpl implements FlightService {
                 checkDataDBFlight.get().setArrivalDate(request.getArrivalDate());
                 count++;
             }
-            if (request.getDepartureAirport() != null) {
-                checkDataDBFlight.get().setDepartureAirport(request.getDepartureAirport());
-                count++;
+            if (request.getDepartureAirportId() != null) {
+                Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
+                if (!checkDataDBDepartureAirport.isPresent()) {
+                    throw new EntityNotFoundException("Departure Airport with id " + request.getDepartureAirportId() + " not found");
+                } else {
+                    checkDataDBFlight.get().setDepartureAirport(checkDataDBDepartureAirport.get());
+                    count++;
+                }
             }
-            if (request.getArrivalAirport() != null) {
-                checkDataDBFlight.get().setArrivalAirport(request.getArrivalAirport());
-                count++;
+            if (request.getArrivalAirportId() != null) {
+                Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
+                if (!checkDataDBArrivalAirport.isPresent()) {
+                    throw new EntityNotFoundException("Arrival Airport with id " + request.getArrivalAirportId() + " not found");
+                } else {
+                    checkDataDBFlight.get().setArrivalAirport(checkDataDBArrivalAirport.get());
+                    count++;
+                }
             }
-            if (request.getAirplane() != null) {
-                checkDataDBFlight.get().setAirplane(request.getAirplane());
-                count++;
+            if (request.getAirplaneId() != null) {
+                Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplaneId());
+                if (!checkDataDBAirplane.isPresent()) {
+                    throw new EntityNotFoundException("Airplane with id " + request.getAirplaneId() + " not found");
+                } else {
+                    checkDataDBFlight.get().setAirplane(checkDataDBAirplane.get());
+                    count++;
+                }
             }
             if (count == 0) throw new IllegalArgumentException("No data to update");
             log.info("Flight Updated");
@@ -111,9 +140,9 @@ public class FlightServiceImpl implements FlightService {
     public Map<Object, Object> delete(FlightDeleteModel request, Long id) {
         try {
             log.info("Delete Flight");
-            Flight checkDataDBFlight = flightRepository.checkExistingId(id);
-            if (checkDataDBFlight == null) throw new EntityExistsException("Flight with id " + id + " not found");
-            flightRepository.delete(checkDataDBFlight);
+            Optional<Flight> checkDataDBFlight = flightRepository.findById(id);
+            if (!checkDataDBFlight.isPresent()) throw new EntityExistsException("Flight with id " + id + " not found");
+            flightRepository.delete(checkDataDBFlight.get());
             log.info("Flight Deleted");
             return templateResponse.success("Flight with id " + id + " deleted");
         } catch (Exception e) {
@@ -123,10 +152,34 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, String name, String city, String country, String airportCode) {
+    public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
+                                      Long arrivalAirportId, Long airLineId, String departDate,
+                                      String departureTime, String departureTimeTo, Integer numberOfPassengers) {
         try {
             log.info("Get All Flights");
-            return templateResponse.success(flightRepository.findAll());
+            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
+            Specification<Flight> specification = (((root, query, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate depart = LocalDate.parse(departDate, formatter);
+                predicates.add(criteriaBuilder.equal(root.get("departureDate"), depart));
+                predicates.add(criteriaBuilder.equal(root.get("departureAirport").get("id"), departureAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("arrivalAirport").get("id"), arrivalAirportId));
+                if (airLineId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("airplane").get("airline").get("id"), airLineId));
+                }
+                if (departureTime != null && !departureTime.isEmpty() && departureTimeTo != null && !departureTimeTo.isEmpty()) {
+                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                    LocalTime departureTimeFormat = LocalTime.parse(departureTime, timeFormatter);
+                    LocalTime departureTimeFormat2 = LocalTime.parse(departureTimeTo, timeFormatter);
+                    predicates.add(criteriaBuilder.between(root.get("departureTime"), departureTimeFormat, departureTimeFormat2));
+                }
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            }));
+
+            Page<Flight> list = flightRepository.findAll(specification, pageable);
+            log.info("Flights Found");
+            return templateResponse.success(list);
         } catch (Exception e) {
             log.error("Error Getting All Flights", e);
             throw e;

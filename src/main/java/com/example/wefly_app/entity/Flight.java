@@ -1,11 +1,14 @@
 package com.example.wefly_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -29,10 +32,14 @@ public class Flight extends AbstractDate implements Serializable {
     @JoinColumn(name = "airplane_id")
     private Airplane airplane;
 
-    private String departureDate;
-    private String arrivalDate;
-    private String departureTime;
-    private String arrivalTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private LocalDate departureDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private LocalDate arrivalDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    private LocalTime departureTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    private LocalTime arrivalTime;
     @Column(name = "base_price_adult", precision = 14, scale = 2)
     private BigDecimal basePriceAdult;
     @Column(name = "base_price_child", precision = 14, scale = 2)

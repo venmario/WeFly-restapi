@@ -222,10 +222,8 @@ public class TransactionImpl implements TransactionService {
             });
 
             Page<Transaction> list = transactionRepository.findAll(specification, pageable);
-            Map<Object, Object> map = new HashMap<>();
-            map.put("data", list);
             log.info("get all transaction succeed");
-            return map;
+            return templateResponse.success(list);
         } catch (Exception e) {
             log.error("get all transaction error ", e);
             throw e;

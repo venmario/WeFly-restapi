@@ -42,13 +42,18 @@ public class FlightController {
 
     @GetMapping(value = {"/list", "/list/"})
     public ResponseEntity<Map> getAll(@RequestParam(required = true, defaultValue = "0") int page,
-                                       @RequestParam(required = true, defaultValue = "10") int size,
-                                       @RequestParam(required = false, defaultValue = "name") String orderBy,
-                                       @RequestParam(required = false, defaultValue = "ascending") String orderType,
-                                       @RequestParam(required = false) String name,
-                                       @RequestParam(required = false) String city,
-                                       @RequestParam(required = false) String country,
-                                       @RequestParam(required = false) String airportCode) {
-        return new ResponseEntity<>(flightService.getAll(page, size, orderBy, orderType, name, city, country, airportCode), HttpStatus.OK);
+                                      @RequestParam(required = true, defaultValue = "10") int size,
+                                      @RequestParam(required = false, defaultValue = "basePriceAdult") String orderBy,
+                                      @RequestParam(required = false, defaultValue = "ascending") String orderType,
+                                      @RequestParam(required = true) Long departureAirportId,
+                                      @RequestParam(required = true) Long arrivalAirportId,
+                                      @RequestParam(required = false) Long airLineId,
+                                      @RequestParam(required = true) String departDate,
+                                      @RequestParam(required = false) String arrivalDate,
+                                      @RequestParam(required = false) String departureTime,
+                                      @RequestParam(required = false) String departureTimeTo,
+                                      @RequestParam(required = false) Integer numberOfPassengers) {
+        return new ResponseEntity<>(flightService.getAll(page, size, orderBy, orderType, departureAirportId,
+                arrivalAirportId, airLineId, departDate, arrivalDate, departureTime, numberOfPassengers), HttpStatus.OK);
     }
 }

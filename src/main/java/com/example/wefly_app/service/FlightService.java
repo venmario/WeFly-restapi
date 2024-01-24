@@ -10,7 +10,9 @@ public interface FlightService {
     Map<Object, Object> save(FlightRegisterModel request);
     Map<Object, Object> update(FlightUpdateModel request, Long id);
     Map<Object, Object> delete(FlightDeleteModel request, Long id);
-    Map<Object, Object> getAll(int page, int size, String orderBy, String orderType
-            , String name, String city, String country, String airportCode);
+
+    Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
+                               Long arrivalAirportId, Long airLineId, String departDate,
+                               String departureTime, String departureTimeTo, Integer numberOfPassengers);
     Map<Object, Object> getById(Long id);
 }
