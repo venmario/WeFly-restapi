@@ -2,9 +2,9 @@ package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.Airport;
 import com.example.wefly_app.repository.AirportRepository;
-import com.example.wefly_app.request.AirportDeleteModel;
-import com.example.wefly_app.request.AirportRegisterModel;
-import com.example.wefly_app.request.AirportUpdateModel;
+import com.example.wefly_app.request.airport.AirportDeleteModel;
+import com.example.wefly_app.request.airport.AirportRegisterModel;
+import com.example.wefly_app.request.airport.AirportUpdateModel;
 import com.example.wefly_app.service.AirportService;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
@@ -23,12 +23,19 @@ import java.util.*;
 @Service
 @Slf4j
 public class AirportServiceImpl implements AirportService {
+    private final AirportRepository airportRepository;
+    private final TemplateResponse templateResponse;
+    private final SimpleStringUtils simpleStringUtils;
+
     @Autowired
-    private AirportRepository airportRepository;
-    @Autowired
-    private TemplateResponse templateResponse;
-    @Autowired
-    private SimpleStringUtils simpleStringUtils;
+    public AirportServiceImpl(AirportRepository airportRepository,
+                              TemplateResponse templateResponse,
+                              SimpleStringUtils simpleStringUtils) {
+        this.airportRepository = airportRepository;
+        this.templateResponse = templateResponse;
+        this.simpleStringUtils = simpleStringUtils;
+    }
+
     @Override
     public Map<Object, Object> save(AirportRegisterModel request) {
         try {
@@ -40,7 +47,9 @@ public class AirportServiceImpl implements AirportService {
             airport.setName(request.getName());
             airport.setCity(request.getCity());
             airport.setCountry(request.getCountry());
-            airport.setAirportCode(request.getAirportCode());
+            airport.setIcao(request.getIcao());
+            airport.setIata(request.getIata());
+            airport.setProvince(request.getProvince());
             airport.setStatus(request.getStatus());
 
             log.info("Airport Saved");
@@ -70,8 +79,16 @@ public class AirportServiceImpl implements AirportService {
                 checkDataDBAirport.get().setCountry(request.getCountry());
                 count++;
             }
-            if (request.getAirportCode() != null) {
-                checkDataDBAirport.get().setAirportCode(request.getAirportCode());
+            if (request.getIata() != null) {
+                checkDataDBAirport.get().setIata(request.getIata());
+                count++;
+            }
+            if (request.getIcao() != null) {
+                checkDataDBAirport.get().setIcao(request.getIcao());
+                count++;
+            }
+            if (request.getProvince() != null) {
+                checkDataDBAirport.get().setProvince(request.getProvince());
                 count++;
             }
             if (request.getStatus() != checkDataDBAirport.get().getStatus()) {
@@ -127,7 +144,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType,
                                       String name, String city, String country,
-                                      String airportCode) {
+                                      String iata, String icao, String province) {
         try {
             log.info("Get List Airports");
             Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
@@ -145,9 +162,17 @@ public class AirportServiceImpl implements AirportService {
                     predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("country")), "%" + country.toLowerCase() + "%"));
                     log.info("list airport country like");
                 }
-                if (airportCode != null && !airportCode.isEmpty()) {
-                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("airportCode")), "%" + airportCode.toLowerCase() + "%"));
+                if (iata != null && !iata.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("iata")), "%" + iata.toLowerCase() + "%"));
                     log.info("list airport airportCode like");
+                }
+                if (icao != null && !icao.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("icao")), "%" + icao.toLowerCase() + "%"));
+                    log.info("list airport airportCode like");
+                }
+                if (province != null && !province.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("province")), "%" + province.toLowerCase() + "%"));
+                    log.info("list airport province like");
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
             });

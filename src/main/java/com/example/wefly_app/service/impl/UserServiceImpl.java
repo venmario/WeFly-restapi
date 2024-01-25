@@ -1,6 +1,6 @@
 package com.example.wefly_app.service.impl;
 
-import com.example.wefly_app.entity.Provider;
+import com.example.wefly_app.entity.enums.Provider;
 import com.example.wefly_app.entity.Role;
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;
@@ -45,8 +45,6 @@ public class UserServiceImpl implements UserService {
     RoleRepository repoRole;
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
-    UserRepository repoUser;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -95,6 +93,8 @@ public class UserServiceImpl implements UserService {
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 throw new IncorrectUserCredentialException("Login credential don't match an account in our system");
             }
+            checkUser.setProvider(Provider.LOCAL);
+            userRepository.save(checkUser);
 
             return getToken(loginModel.getEmail(), loginModel.getPassword());
         } catch (Exception e) {
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
             template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
             template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
             emailSender.sendAsync(user.getUsername(), "Register", template);
-            repoUser.save(user);
+            userRepository.save(user);
 
             log.info("register success!");
             return templateResponse.success("Please check email for activation");
@@ -191,12 +191,11 @@ public class UserServiceImpl implements UserService {
         return templateResponse.success("Account Activation Success");
     }
 
-    @Transactional
     @Override
-    public Map<String, Object> loginByGoogle(LoginGoogleModel request) throws IOException {
+    public Map<String, Object> loginByGoogle(String request) throws IOException {
         log.info("Login By Google");
         try {
-            GoogleCredential credential = new GoogleCredential().setAccessToken(request.getToken());
+            GoogleCredential credential = new GoogleCredential().setAccessToken(request);
             Oauth2 oauth2 = new Oauth2.Builder(new NetHttpTransport(), new JacksonFactory(), credential).setApplicationName(
                     "Oauth2").build();
             Userinfoplus profile;
@@ -223,6 +222,7 @@ public class UserServiceImpl implements UserService {
                 user.setProvider(Provider.GOOGLE);
                 userRepository.save(user);
             }
+            log.info("get : " + profile.getEmail());
 
             return getToken(profile.getEmail(), pass);
         } catch (Exception e) {
@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService {
             List<Role> r = repoRole.findByNameIn(roleNames);
             user.setRoles(r);
             user.setPassword(password);
-            repoUser.save(user);
+            userRepository.save(user);
 
             log.info("register Google success!");
         } catch (Exception e) {
@@ -436,11 +436,13 @@ public class UserServiceImpl implements UserService {
                 "&grant_type=password" +
                 "&client_id=my-client-web" +
                 "&client_secret=password";
+        log.info("URL : " + url);
         ResponseEntity<Map<String, Object>> response123 = restTemplateBuilder.build().exchange(url,
                 HttpMethod.POST, null, new ParameterizedTypeReference<Map<String, Object>>() {
                 });
 
         Map<String, Object> response = new HashMap<>();
+        log.info("Response token from spring server");
         if (response123.getStatusCode() == HttpStatus.OK) {
             //save token
 //                checkUser.setAccessToken(response.getBody().get("access_token").toString());
