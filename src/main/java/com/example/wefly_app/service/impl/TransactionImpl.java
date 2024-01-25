@@ -111,6 +111,8 @@ public class TransactionImpl implements TransactionService {
                                         BigDecimal.valueOf(request.getInfantPassenger())
                                 ));
                                 transactionDetail1.setTransaction(transaction);
+                                checkDataDBFlightClass.setAvailableSeat(checkDataDBFlightClass.getAvailableSeat() - (request.getAdultPassenger() + request.getChildPassenger()));
+                                flightClassRepository.save(checkDataDBFlightClass);
                                 return transactionDetail1;
                             })
                     .collect(Collectors.toList());

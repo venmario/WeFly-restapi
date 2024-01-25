@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -55,7 +56,8 @@ public class FlightServiceImpl implements FlightService {
         this.airplaneRepository = airplaneRepository;
         this.flightClassRepository = flightClassRepository;
     }
-    
+
+    @Transactional
     @Override
     public Map<Object, Object> save(FlightRegisterModel request) {
         try {
@@ -88,6 +90,7 @@ public class FlightServiceImpl implements FlightService {
         }
     }
 
+    @Transactional
     @Override
     public Map<Object, Object> update(FlightUpdateModel request, Long id) {
         try {
