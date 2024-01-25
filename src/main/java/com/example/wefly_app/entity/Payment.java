@@ -1,5 +1,6 @@
 package com.example.wefly_app.entity;
 
+import com.example.wefly_app.entity.enums.PaymentStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.Where;

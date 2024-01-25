@@ -49,11 +49,12 @@ public class FlightController {
                                       @RequestParam(required = true) Long arrivalAirportId,
                                       @RequestParam(required = false) Long airLineId,
                                       @RequestParam(required = true) String departDate,
-                                      @RequestParam(required = false) String arrivalDate,
                                       @RequestParam(required = false) String departureTime,
-                                      @RequestParam(required = false) String departureTimeTo,
-                                      @RequestParam(required = false) Integer numberOfPassengers) {
+                                      @RequestParam(required = false) String arrivalTime,
+                                      @RequestParam(required = true, defaultValue = "1") Integer numberOfPassengers,
+                                      @RequestParam(required = true, defaultValue = "ECONOMY") String seatClass) {
         return new ResponseEntity<>(flightService.getAll(page, size, orderBy, orderType, departureAirportId,
-                arrivalAirportId, airLineId, departDate, arrivalDate, departureTime, numberOfPassengers), HttpStatus.OK);
+                arrivalAirportId, airLineId, departDate, departureTime, arrivalTime, numberOfPassengers
+        ,seatClass), HttpStatus.OK);
     }
 }

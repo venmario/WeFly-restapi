@@ -17,10 +17,12 @@ public class Airport extends AbstractDate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String airportCode;
+    private String iata;
+    private String icao;
     private String city;
+    private String province;
     private String country;
-    private boolean status;
+    private boolean status = true;
 
     public boolean getStatus(){
         return this.status;

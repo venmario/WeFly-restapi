@@ -1,7 +1,8 @@
 package com.example.wefly_app.service.impl;
 
-import com.example.wefly_app.entity.Airplane;
-import com.example.wefly_app.entity.Airport;
+import com.example.wefly_app.entity.*;
+import com.example.wefly_app.entity.enums.SeatClass;
+import com.example.wefly_app.repository.AirlineRepository;
 import com.example.wefly_app.repository.AirplaneRepository;
 import com.example.wefly_app.request.airplane.AirplaneDeleteModel;
 import com.example.wefly_app.request.airplane.AirplaneRegisterModel;
@@ -17,8 +18,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,6 +32,8 @@ public class AirplaneServiceImpl implements AirplaneService {
     private TemplateResponse templateResponse;
     @Autowired
     private SimpleStringUtils simpleStringUtils;
+    @Autowired
+    private AirlineRepository airlineRepository;
 
     @Override
     public Map<Object, Object> save(AirplaneRegisterModel request) {
@@ -37,16 +42,44 @@ public class AirplaneServiceImpl implements AirplaneService {
             if (airplaneRepository.getSimilarName(request.getName()) > 0){
                 throw new EntityExistsException("Airplane with name " + request.getName() + " already exists");
             }
+            Airline checkDataDBAirline = airlineRepository.findById(request.getAirlineId())
+                    .orElseThrow(() -> new EntityNotFoundException("Airline with id " + request.getAirlineId() + " not found"));
             Airplane airplane = new Airplane();
             airplane.setName(request.getName());
             airplane.setType(request.getType());
-
+            airplane.setAirline(checkDataDBAirline);
+            List<AirplaneSeat> seats = request.getSeats().stream()
+                            .map(seat -> {
+                                AirplaneSeat airplaneSeat = new AirplaneSeat();
+                                airplaneSeat.setSeatClass(SeatClass.valueOf(seat.getSeatClass()));
+                                airplaneSeat.setSeatRow(seat.getNumberOfRow());
+                                airplaneSeat.setSeatColumn(seat.getNumberOfColumn());
+                                airplaneSeat.setAirplane(airplane);
+                                airplaneSeat.setSeatAvailabilities(setSeatAvailabilities(airplaneSeat));
+                                return airplaneSeat;
+                            }).collect(Collectors.toList());
+            airplane.setSeats(seats);
             log.info("Airplane Saved");
             return templateResponse.success(airplaneRepository.save(airplane));
         } catch (Exception e) {
             log.error("Error Saving Airplane", e);
             throw e;
         }
+    }
+
+    private List<SeatAvailability> setSeatAvailabilities(AirplaneSeat airplaneSeat){
+        List<SeatAvailability> seatAvailabilities = new ArrayList<>();
+        for (int i = 0; i < airplaneSeat.getSeatRow(); i++) {
+            char rowLetter = (char) ('A' + i);
+            for (int j = 1; j <= airplaneSeat.getSeatColumn(); j++) {
+                SeatAvailability seatAvailability = new SeatAvailability();
+                seatAvailability.setAirplaneSeat(airplaneSeat);
+                seatAvailability.setSeatNumber(j + "" + rowLetter);
+                seatAvailability.setAirplaneSeat(airplaneSeat);
+                seatAvailabilities.add(seatAvailability);
+            }
+        }
+        return seatAvailabilities;
     }
 
     @Override

@@ -1,6 +1,9 @@
 package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.*;
+import com.example.wefly_app.entity.enums.PaymentStatus;
+import com.example.wefly_app.entity.enums.SeatClass;
+import com.example.wefly_app.entity.enums.Status;
 import com.example.wefly_app.repository.*;
 import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
@@ -50,7 +53,7 @@ public class TransactionImpl implements TransactionService {
     @Autowired
     public UserRepository userRepository;
     @Autowired
-    public FlightRepository flightRepository;
+    public FlightClassRepository flightClassRepository;
     @Autowired
     public TemplateResponse templateResponse;
     @Autowired
@@ -95,16 +98,16 @@ public class TransactionImpl implements TransactionService {
             List<TransactionDetail> transactionDetails = request.getTransactionDetails().stream()
                     .map(transactionDetail -> {
                                 TransactionDetail transactionDetail1 = new TransactionDetail();
-                                Flight checkDataDBFlight = flightRepository.findById(transactionDetail.getFlightId())
+                                FlightClass checkDataDBFlightClass = flightClassRepository.findById(transactionDetail.getFlightClassId())
                                                 .orElseThrow(() -> new EntityNotFoundException("Flight not found"));
-                                transactionDetail1.setFlight(checkDataDBFlight);
-                                transactionDetail1.setTotalPriceAdult(checkDataDBFlight.getBasePriceAdult().multiply(
+                                transactionDetail1.setFlightClass(checkDataDBFlightClass);
+                                transactionDetail1.setTotalPriceAdult(checkDataDBFlightClass.getBasePriceAdult().multiply(
                                         BigDecimal.valueOf(request.getAdultPassenger())
                                 ));
-                                transactionDetail1.setTotalPriceChild(checkDataDBFlight.getBasePriceChild().multiply(
+                                transactionDetail1.setTotalPriceChild(checkDataDBFlightClass.getBasePriceChild().multiply(
                                         BigDecimal.valueOf(request.getChildPassenger())
                                 ));
-                                transactionDetail1.setTotalPriceInfant(checkDataDBFlight.getBasePriceInfant().multiply(
+                                transactionDetail1.setTotalPriceInfant(checkDataDBFlightClass.getBasePriceInfant().multiply(
                                         BigDecimal.valueOf(request.getInfantPassenger())
                                 ));
                                 transactionDetail1.setTransaction(transaction);
@@ -117,7 +120,7 @@ public class TransactionImpl implements TransactionService {
                             .add(transactionDetail.getTotalPriceInfant())
                     )
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+            transaction.setSeatClass(transactionDetails.get(0).getFlightClass().getSeatClass());
             transaction.setTransactionDetails(transactionDetails);
             transaction.setTotalPrice(totalPrice);
             transaction.setOrderer(orderer);

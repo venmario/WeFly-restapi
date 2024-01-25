@@ -25,7 +25,6 @@ public class FlightUpdateModel {
     private LocalTime departureTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime arrivalTime;
-    @NotNull(message = "base price is required")
     @Column(precision = 14, scale = 2)
     private BigDecimal basePrice;
 }

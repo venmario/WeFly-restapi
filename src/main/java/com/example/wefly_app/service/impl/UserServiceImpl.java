@@ -1,6 +1,6 @@
 package com.example.wefly_app.service.impl;
 
-import com.example.wefly_app.entity.Provider;
+import com.example.wefly_app.entity.enums.Provider;
 import com.example.wefly_app.entity.Role;
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.RoleRepository;

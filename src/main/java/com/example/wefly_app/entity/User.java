@@ -1,5 +1,6 @@
 package com.example.wefly_app.entity;
 
+import com.example.wefly_app.entity.enums.Provider;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;

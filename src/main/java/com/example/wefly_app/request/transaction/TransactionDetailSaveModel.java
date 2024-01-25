@@ -8,6 +8,6 @@ import java.math.BigDecimal;
 
 @Data
 public class TransactionDetailSaveModel {
-    @NotNull(message = "flight id must not null")
-    private Long flightId;
+    @NotNull(message = "flight class id must not null")
+    private Long flightClassId;
 }

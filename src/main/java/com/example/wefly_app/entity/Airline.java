@@ -22,4 +22,6 @@ public class Airline extends AbstractDate implements Serializable {
     private BigDecimal discountChild;
     @Column(name = "discount_infant", precision = 5, scale = 2)
     private BigDecimal discountInfant;
+    @Column(name = "business_multiplier", precision = 5, scale = 2)
+    private BigDecimal businessMultiplier;
 }

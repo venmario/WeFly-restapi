@@ -47,7 +47,9 @@ public class AirportServiceImpl implements AirportService {
             airport.setName(request.getName());
             airport.setCity(request.getCity());
             airport.setCountry(request.getCountry());
-            airport.setAirportCode(request.getAirportCode());
+            airport.setIcao(request.getIcao());
+            airport.setIata(request.getIata());
+            airport.setProvince(request.getProvince());
             airport.setStatus(request.getStatus());
 
             log.info("Airport Saved");
@@ -77,8 +79,16 @@ public class AirportServiceImpl implements AirportService {
                 checkDataDBAirport.get().setCountry(request.getCountry());
                 count++;
             }
-            if (request.getAirportCode() != null) {
-                checkDataDBAirport.get().setAirportCode(request.getAirportCode());
+            if (request.getIata() != null) {
+                checkDataDBAirport.get().setIata(request.getIata());
+                count++;
+            }
+            if (request.getIcao() != null) {
+                checkDataDBAirport.get().setIcao(request.getIcao());
+                count++;
+            }
+            if (request.getProvince() != null) {
+                checkDataDBAirport.get().setProvince(request.getProvince());
                 count++;
             }
             if (request.getStatus() != checkDataDBAirport.get().getStatus()) {
@@ -134,7 +144,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType,
                                       String name, String city, String country,
-                                      String airportCode) {
+                                      String iata, String icao, String province) {
         try {
             log.info("Get List Airports");
             Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
@@ -152,9 +162,17 @@ public class AirportServiceImpl implements AirportService {
                     predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("country")), "%" + country.toLowerCase() + "%"));
                     log.info("list airport country like");
                 }
-                if (airportCode != null && !airportCode.isEmpty()) {
-                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("airportCode")), "%" + airportCode.toLowerCase() + "%"));
+                if (iata != null && !iata.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("iata")), "%" + iata.toLowerCase() + "%"));
                     log.info("list airport airportCode like");
+                }
+                if (icao != null && !icao.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("icao")), "%" + icao.toLowerCase() + "%"));
+                    log.info("list airport airportCode like");
+                }
+                if (province != null && !province.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("province")), "%" + province.toLowerCase() + "%"));
+                    log.info("list airport province like");
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
             });

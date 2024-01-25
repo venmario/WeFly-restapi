@@ -1,13 +1,8 @@
 package com.example.wefly_app.service.oauth;
 
-import com.example.wefly_app.entity.Client;
-import com.example.wefly_app.entity.Role;
-import com.example.wefly_app.entity.RolePath;
-import com.example.wefly_app.entity.User;
-import com.example.wefly_app.repository.ClientRepository;
-import com.example.wefly_app.repository.RolePathRepository;
-import com.example.wefly_app.repository.RoleRepository;
-import com.example.wefly_app.repository.UserRepository;
+import com.example.wefly_app.entity.*;
+import com.example.wefly_app.repository.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +37,9 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AirportRepository airportRepository;
 
     @Autowired
     private RolePathRepository rolePathRepository;
@@ -70,12 +70,22 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     @Override
     @Transactional
-    public void run(ApplicationArguments applicationArguments) {
+    public void run(ApplicationArguments applicationArguments) throws IOException {
         String password = encoder.encode(defaultPassword);
 
         this.insertRoles();
         this.insertClients(password);
         this.insertUser(password);
+        this.insertAirports();
+    }
+
+    public void insertAirports() throws IOException {
+        if (airportRepository.count() == 0) {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Airport> airports = mapper.readValue(Paths.get("./database_seeder/indo-airports.json").toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, Airport.class));
+            airportRepository.saveAll(airports);
+        }
     }
 
     @Transactional

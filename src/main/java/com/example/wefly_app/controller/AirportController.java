@@ -52,8 +52,11 @@ public class AirportController {
                                        @RequestParam(required = false) String name,
                                        @RequestParam(required = false) String city,
                                        @RequestParam(required = false) String country,
-                                       @RequestParam(required = false) String airportCode) {
-        return new ResponseEntity<>(airportService.getAll(page, size, orderBy, orderType, name, city, country, airportCode), HttpStatus.OK);
+                                       @RequestParam(required = false) String iata,
+                                       @RequestParam(required = false) String icao,
+                                       @RequestParam(required = false) String province) {
+        return new ResponseEntity<>(airportService.getAll(page, size, orderBy, orderType, name, city, country, iata,
+                icao, province), HttpStatus.OK);
     }
 
 

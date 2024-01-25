@@ -13,6 +13,7 @@ public interface FlightService {
 
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
                                Long arrivalAirportId, Long airLineId, String departDate,
-                               String departureTime, String departureTimeTo, Integer numberOfPassengers);
+                               String departureTime, String arrivalTime, Integer numberOfPassengers,
+                               String seatClass);
     Map<Object, Object> getById(Long id);
 }

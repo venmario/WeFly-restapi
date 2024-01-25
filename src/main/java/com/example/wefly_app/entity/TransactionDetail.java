@@ -18,8 +18,8 @@ public class TransactionDetail {
     @JoinColumn(name = "transaction_id")
     private Transaction transaction;
     @ManyToOne
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
+    @JoinColumn(name = "flight_class_id")
+    private FlightClass flightClass;
     @Column(name = "total_price_adult", precision = 14, scale = 2)
     private BigDecimal totalPriceAdult;
     @Column(name = "total_price_child", precision = 14, scale = 2)

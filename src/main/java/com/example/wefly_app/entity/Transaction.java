@@ -1,9 +1,9 @@
 package com.example.wefly_app.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.example.wefly_app.entity.enums.SeatClass;
+import com.example.wefly_app.entity.enums.Status;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
-import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -19,6 +19,7 @@ public class Transaction extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private SeatClass seatClass;
 
 //    @JsonBackReference
     @ManyToOne

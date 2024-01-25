@@ -1,6 +1,8 @@
 package com.example.wefly_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.Where;
 
@@ -9,6 +11,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -32,6 +35,10 @@ public class Flight extends AbstractDate implements Serializable {
     @JoinColumn(name = "airplane_id")
     private Airplane airplane;
 
+    @JsonBackReference
+    @OneToMany(mappedBy = "flight", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<FlightClass> flightClasses;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate departureDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
@@ -40,10 +47,6 @@ public class Flight extends AbstractDate implements Serializable {
     private LocalTime departureTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime arrivalTime;
-    @Column(name = "base_price_adult", precision = 14, scale = 2)
-    private BigDecimal basePriceAdult;
-    @Column(name = "base_price_child", precision = 14, scale = 2)
-    private BigDecimal basePriceChild;
-    @Column(name = "base_price_infant", precision = 14, scale = 2)
-    private BigDecimal basePriceInfant;
+    @Column(name = "base_price",precision = 14, scale = 2)
+    private BigDecimal basePrice;
 }
