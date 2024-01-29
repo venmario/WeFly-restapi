@@ -17,7 +17,7 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn clean package
 
   deploy:
     runs-on: ubuntu-latest
@@ -25,13 +25,23 @@ jobs:
     if: github.ref == 'refs/heads/feature/transaction-api'
     steps:
       - uses: actions/checkout@v2
-      - name: Set up SSH key
+      - name: Add SSH key to known hosts
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
       - name: Copy jar file to the server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
         run: |
-          scp -i private_key ./target/WeFly_App_Final_Project.jar root@${{ secrets.SERVER_IP }}:/synrgy
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          scp -i private_key ./target/WeFly_App_Final_Project.jar root@$SERVER_IP:/synrgy
       - name: Execute deploy script
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
         run: |
-          ssh -i private_key root@${{ secrets.SERVER_IP }} 'bash /synrgy/deploy_script.sh'
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh -i private_key root@$SERVER_IP 'bash /synrgy/deploy_script.sh'
