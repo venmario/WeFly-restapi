@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -24,15 +25,13 @@ jobs:
     if: github.ref == 'refs/heads/feature/transaction-api'
     steps:
       - uses: actions/checkout@v2
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
+          chmod 600 private_key
       - name: Copy jar file to the server
-        env: # Setting environment variables for a step
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
         run: |
-          scp -i $SSH_PRIVATE_KEY ./target/WeFly_App_Final_Project.jar root@$SERVER_IP:/synrgy
+          scp -i private_key ./target/WeFly_App_Final_Project.jar root@${{ secrets.SERVER_IP }}:/synrgy
       - name: Execute deploy script
-        env: # Setting environment variables for a step
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
         run: |
-          ssh -i $SSH_PRIVATE_KEY root@$SERVER_IP 'bash /synrgy/deploy_script.sh'
+          ssh -i private_key root@${{ secrets.SERVER_IP }} 'bash /synrgy/deploy_script.sh'
