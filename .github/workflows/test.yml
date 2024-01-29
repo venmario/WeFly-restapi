@@ -26,6 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Copy jar file to the server
-        run: scp -i ${{ secrets.SSH_PRIVATE_KEY }} ./target/WeFly_App_Final_Project.jar wefly-app@${{ secrets.SERVER_IP }}:/synrgy
+        run: scp -i ${{ secrets.SSH_PRIVATE_KEY }} ./target/WeFly_App_Final_Project.jar root@${{ secrets.SERVER_IP }}:/synrgy
       - name: Execute deploy script
-        run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} wefly-app@${{ secrets.SERVER_IP }} 'bash /synrgy/deploy_script.sh'
+        run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} root@${{ secrets.SERVER_IP }} 'bash /synrgy/deploy_script.sh'
