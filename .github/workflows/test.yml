@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -17,7 +16,7 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Build with Maven
-        run: mvn clean package
+        run: mvn -B package --file pom.xml
 
   deploy:
     runs-on: ubuntu-latest
@@ -26,6 +25,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Copy jar file to the server
-        run: scp -i ${{ secrets.SSH_PRIVATE_KEY }} ./target/WeFly_App_Final_Project.jar root@${{ secrets.SERVER_IP }}:/synrgy
+        env: # Setting environment variables for a step
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+        run: |
+          scp -i $SSH_PRIVATE_KEY ./target/WeFly_App_Final_Project.jar root@$SERVER_IP:/synrgy
       - name: Execute deploy script
-        run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} root@${{ secrets.SERVER_IP }} 'bash /synrgy/deploy_script.sh'
+        env: # Setting environment variables for a step
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+        run: |
+          ssh -i $SSH_PRIVATE_KEY root@$SERVER_IP 'bash /synrgy/deploy_script.sh'
