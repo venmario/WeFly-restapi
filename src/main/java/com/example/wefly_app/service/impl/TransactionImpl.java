@@ -2,9 +2,9 @@ package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.*;
 import com.example.wefly_app.entity.enums.PaymentStatus;
-import com.example.wefly_app.entity.enums.SeatClass;
 import com.example.wefly_app.entity.enums.Status;
 import com.example.wefly_app.repository.*;
+import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.TransactionService;
@@ -14,7 +14,9 @@ import com.example.wefly_app.util.TemplateResponse;
 import com.example.wefly_app.util.exception.FileStorageException;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
 import com.example.wefly_app.util.exception.ValidationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -22,7 +24,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,6 +54,8 @@ import java.util.stream.Collectors;
 public class TransactionImpl implements TransactionService {
     @Value("${app.upload.payment.proof}")//FILE_SHOW_RUL
     private String BASE_UPLOAD_FOLDER;
+    @Value("${midtrans.server-key}")
+    private String SERVER_KEY;
     private final Path fileStorageLocation;
     @Autowired
     public TransactionRepository transactionRepository;
@@ -74,7 +83,7 @@ public class TransactionImpl implements TransactionService {
     }
     @Transactional
     @Override
-    public Map<Object, Object> save(TransactionSaveModel request) {
+    public Map<Object, Object> save(TransactionSaveModel request) throws IOException {
         try {
             log.info("save transaction");
             if (request.getInfantPassenger() > request.getAdultPassenger()) {
@@ -88,11 +97,8 @@ public class TransactionImpl implements TransactionService {
                 throw new IncorrectUserCredentialException("unidentified token user");
             }
 
-            Orderer orderer = new Orderer();
-            orderer.setFirstName(request.getOrderer().getFirstName());
-            orderer.setLastName(request.getOrderer().getLastName());
-            orderer.setEmail(request.getOrderer().getEmail());
-            orderer.setPhoneNumber(request.getOrderer().getPhoneNumber());
+            ModelMapper modelMapper = new ModelMapper();
+            Orderer orderer = modelMapper.map(request.getOrderer(), Orderer.class);
 
             Transaction transaction = new Transaction();
             List<TransactionDetail> transactionDetails = request.getTransactionDetails().stream()
@@ -141,10 +147,55 @@ public class TransactionImpl implements TransactionService {
                             })
                     .collect(Collectors.toList());
             transaction.setPassengers(passengers);
+            Transaction transactionSaved = transactionRepository.save(transaction);
             log.info("save transaction success, proceed to payment");
-            return templateResponse.success(transactionRepository.save(transaction));
+            return templateResponse.success(midtransRequest(transactionSaved));
         } catch (Exception e) {
             log.error("Save transaction error ", e);
+            throw e;
+        }
+    }
+
+    public Map midtransRequest (Transaction request) throws IOException {
+        try {
+            log.info("midtrans request");
+            Map<String, Object> transactionDetails = new HashMap<>();
+            transactionDetails.put("order_id", request.getId());
+            transactionDetails.put("gross_amount", request.getTotalPrice());
+            System.out.println("request.getTotalPrice() = " + request.getTotalPrice());
+            System.out.println("request.getId() = " + request.getId());
+
+            Map<String, Object> customerDetails = new HashMap<>();
+            customerDetails.put("first_name", request.getOrderer().getFirstName());
+            customerDetails.put("last_name", request.getOrderer().getLastName());
+            customerDetails.put("email", request.getOrderer().getEmail());
+            customerDetails.put("phone", request.getOrderer().getPhoneNumber());
+
+            MidtransRequestModel midtransRequest = new MidtransRequestModel();
+            midtransRequest.setTransactionDetails(transactionDetails);
+            midtransRequest.setCustomerDetails(customerDetails);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String requestBody = objectMapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(midtransRequest);
+
+            String url = "https://app.sandbox.midtrans.com/snap/v1/transactions";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", "application/json");
+            headers.set("Content-Type", "application/json");
+            String encodedAuth = Base64.getEncoder().encodeToString(SERVER_KEY.getBytes());
+            headers.set("Authorization", "Basic " + encodedAuth);
+
+            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            Map result = mapper.readValue(response.getBody(), Map.class);
+            log.info("midtrans request success");
+            return result;
+        } catch (Exception e) {
+            log.error("midtrans request error ", e);
             throw e;
         }
     }

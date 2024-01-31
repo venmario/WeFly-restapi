@@ -14,4 +14,5 @@ public class UpdateUserModel {
     private LocalDate dateOfBirth;
     @Pattern(regexp = "^\\d+$", message = "Phone number must contain only numbers")
     private String phoneNumber;
+    private String gender;
 }

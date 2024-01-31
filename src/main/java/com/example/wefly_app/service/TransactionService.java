@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public interface TransactionService {
-    Map<Object, Object> save(TransactionSaveModel request);
+    Map<Object, Object> save(TransactionSaveModel request) throws IOException;
     Map<Object,Object> delete(Long request);
     Map<Object, Object> getById(Long request);
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType

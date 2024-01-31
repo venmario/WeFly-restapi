@@ -26,7 +26,7 @@ public class TransactionController {
     public TransactionService transactionService;
 
     @PostMapping(value = {"/save", "/save/"})
-    public ResponseEntity<Map> save(@Valid @RequestBody TransactionSaveModel request) {
+    public ResponseEntity<Map> save(@Valid @RequestBody TransactionSaveModel request) throws IOException {
         return new ResponseEntity<>(transactionService.save(request), HttpStatus.OK);
     }
     @DeleteMapping(value = {"/delete/{id}", "/delete/{id}/"})

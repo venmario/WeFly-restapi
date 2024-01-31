@@ -42,7 +42,7 @@ public class Transaction extends AbstractDate implements Serializable {
     private int adultPassenger;
     private int childPassenger;
     private int infantPassenger;
-    @Column(name = "total_price", precision = 15, scale = 2)
+    @Column(name = "total_price", precision = 13)
     private BigDecimal totalPrice;
     @Enumerated(EnumType.STRING)
     private Status status = Status.PENDING;
