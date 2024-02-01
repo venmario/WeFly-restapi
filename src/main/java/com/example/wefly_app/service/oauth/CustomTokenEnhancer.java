@@ -25,6 +25,8 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         User user = getUser(authentication);
         additionalInfo.put("id", user.getId());
         additionalInfo.put("full_name", user.getFullName());
+        additionalInfo.put("phone_number", user.getPhoneNumber());
+        additionalInfo.put("date_of_birth", user.getDateOfBirth().toString());
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;
