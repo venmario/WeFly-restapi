@@ -2,6 +2,7 @@ package com.example.wefly_app.service.oauth;
 
 import com.example.wefly_app.entity.User;
 import com.example.wefly_app.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class CustomTokenEnhancer implements TokenEnhancer {
 
     @Autowired
@@ -20,16 +22,26 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-        Map<String, Object> additionalInfo = new HashMap<>();
+        try {
+            Map<String, Object> additionalInfo = new HashMap<>();
 
-        User user = getUser(authentication);
-        additionalInfo.put("id", user.getId());
-        additionalInfo.put("full_name", user.getFullName());
-        additionalInfo.put("phone_number", user.getPhoneNumber());
-        additionalInfo.put("date_of_birth", user.getDateOfBirth().toString());
+            User user = getUser(authentication);
+            additionalInfo.put("id", user.getId());
+            additionalInfo.put("full_name", user.getFullName());
+            if (user.getPhoneNumber() == null) {
+                additionalInfo.put("phone_number", "");
+            } else additionalInfo.put("phone_number", user.getPhoneNumber());
+            if (user.getDateOfBirth() == null) {
+                additionalInfo.put("date_of_birth", "");
+            } else additionalInfo.put("date_of_birth", user.getDateOfBirth());
 
-        ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-        return accessToken;
+            ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
+            return accessToken;
+        } catch (Exception e) {
+            log.error("Error while enhancing token", e);
+            throw e;
+        }
+
     }
 
     private User getUser(OAuth2Authentication authentication) {
