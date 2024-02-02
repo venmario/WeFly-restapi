@@ -41,6 +41,8 @@ public class UserServiceImpl implements UserService {
 
     @Value("${BASEURL}")
     private String baseUrl;
+    @Value("${frontend.email.activation}")
+    private String activationUrl;
     @Autowired
     RoleRepository repoRole;
     @Autowired
@@ -145,7 +147,7 @@ public class UserServiceImpl implements UserService {
             user.setOtp(otp);
             user.setOtpExpiredDate(expirationDate);
             template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
-            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
+            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  activationUrl + otp);
             emailSender.sendAsync(user.getUsername(), "Register", template);
             userRepository.save(user);
 

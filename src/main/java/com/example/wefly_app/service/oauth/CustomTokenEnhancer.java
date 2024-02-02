@@ -28,12 +28,10 @@ public class CustomTokenEnhancer implements TokenEnhancer {
             User user = getUser(authentication);
             additionalInfo.put("id", user.getId());
             additionalInfo.put("full_name", user.getFullName());
-            if (user.getPhoneNumber() == null) {
-                additionalInfo.put("phone_number", "");
-            } else additionalInfo.put("phone_number", user.getPhoneNumber());
-            if (user.getDateOfBirth() == null) {
-                additionalInfo.put("date_of_birth", "");
-            } else additionalInfo.put("date_of_birth", user.getDateOfBirth());
+            String phoneNumber = user.getPhoneNumber() == null ? "" : user.getPhoneNumber();
+            String dateOfBirth = user.getDateOfBirth() == null ? "" : String.valueOf(user.getDateOfBirth());
+            additionalInfo.put("phone_number", phoneNumber);
+            additionalInfo.put("date_of_birth", dateOfBirth);
 
             ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
             return accessToken;
