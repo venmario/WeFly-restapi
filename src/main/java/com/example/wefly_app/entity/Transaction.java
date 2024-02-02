@@ -1,7 +1,6 @@
 package com.example.wefly_app.entity;
 
 import com.example.wefly_app.entity.enums.SeatClass;
-import com.example.wefly_app.entity.enums.Status;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.Where;
@@ -39,12 +38,15 @@ public class Transaction extends AbstractDate implements Serializable {
     @JoinColumn(name = "orderer_id")
     private Orderer orderer;
 
+    @JsonManagedReference
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
     private int adultPassenger;
     private int childPassenger;
     private int infantPassenger;
     @Column(name = "total_price", precision = 13)
     private BigDecimal totalPrice;
-    @Enumerated(EnumType.STRING)
-    private Status status = Status.PENDING;
     private String paymentProof;
 }

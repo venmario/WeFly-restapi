@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -12,13 +13,13 @@ import java.util.Map;
 public class MidtransResponseModel {
     @JsonProperty("transaction_time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDate transactionTime;
+    private LocalDateTime transactionTime;
     @JsonProperty("settlement_time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDate settlementTime;
+    private LocalDateTime settlementTime;
     @JsonProperty("expiry_time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDate expiryTime;
+    private LocalDateTime expiryTime;
     @JsonProperty("transaction_status")
     private String transactionStatus;
     @JsonProperty("status_code")
@@ -37,7 +38,7 @@ public class MidtransResponseModel {
     private String cardType;
     private String currency;
     private String bank;
-    private String issuer;
+    private String acquirer;
     private String store;
     @JsonProperty("va_numbers")
     private List<Map<Object, Object>> vaNumbers;

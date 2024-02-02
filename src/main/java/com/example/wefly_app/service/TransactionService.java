@@ -1,5 +1,6 @@
 package com.example.wefly_app.service;
 
+import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import org.springframework.core.io.Resource;
@@ -14,9 +15,10 @@ public interface TransactionService {
     Map<Object, Object> getById(Long request);
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType
             , String startDate, String endDate, String status);
-    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
-    Map<Object, Object> savePayment(PaymentRegisterModel request);
-    Map<Object, Object> savePaymentProof(MultipartFile file, Long paymentId) throws IOException;
-    Resource getPaymentProof(Long paymentId);
+//    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
+    Map<Object, Object> midtransGetResponse(MidtransResponseModel orderId);
+//    Map<Object, Object> savePayment(PaymentRegisterModel request);
+//    Map<Object, Object> savePaymentProof(MultipartFile file, Long paymentId) throws IOException;
+//    Resource getPaymentProof(Long paymentId);
 
 }
