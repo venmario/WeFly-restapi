@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,7 +22,7 @@ public class Payment implements Serializable {
     private LocalDateTime settlementTime;
     @JsonProperty("expiry_time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime expiryTime = LocalDateTime.now().plusHours(1);
+    private LocalDateTime expiryTime;
     @JsonProperty("transaction_status")
     private String transactionStatus = "CHOOSING_PAYMENT";
     @JsonProperty("payment_type")
@@ -35,6 +34,7 @@ public class Payment implements Serializable {
     @JsonBackReference
     @OneToOne(mappedBy = "payment")
     private Transaction transaction;
+    private String token;
 
     public void setTransactionStatus(String transactionStatus) {
         this.transactionStatus = transactionStatus.toUpperCase();

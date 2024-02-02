@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,6 +37,7 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -149,15 +151,21 @@ public class TransactionImpl implements TransactionService {
             transaction.setPassengers(passengers);
             transaction.setPayment(new Payment());
             Transaction transactionSaved = transactionRepository.save(transaction);
+            Map<String, Object> response = midtransRequest(transaction);
+            Payment payment = transactionSaved.getPayment();
+            payment.setToken((String) response.get("token"));
+            payment.setExpiryTime(LocalDateTime.now().plusHours(1));
+            paymentRepository.save(payment);
+            response.put("transaction", transactionSaved);
             log.info("save transaction success, proceed to payment");
-            return templateResponse.success(midtransRequest(transactionSaved));
+            return templateResponse.success(response);
         } catch (Exception e) {
             log.error("Save transaction error ", e);
             throw e;
         }
     }
 
-    public Map midtransRequest (Transaction request) throws IOException {
+    public Map<String, Object> midtransRequest (Transaction request) throws IOException {
         try {
             log.info("midtrans request");
             MidtransRequestModel midtransRequest = getMidtransRequestModel(request);
@@ -176,11 +184,10 @@ public class TransactionImpl implements TransactionService {
 
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            Map result = mapper.readValue(response.getBody(), Map.class);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.POST, entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {});
             log.info("midtrans request success");
-            return result;
+            return response.getBody();
         } catch (Exception e) {
             log.error("midtrans request error ", e);
             throw e;
@@ -218,7 +225,9 @@ public class TransactionImpl implements TransactionService {
                 throw new EntityNotFoundException("transaction not found");
             }
             Payment payment = checkDataDBTransaction.get().getPayment();
-            payment.setTransactionStatus(request.getTransactionStatus());
+            if (request.getTransactionStatus().matches("settlement|capture")) {
+                payment.setTransactionStatus("PAID");
+            }
             payment.setSettlementTime(request.getSettlementTime());
             payment.setExpiryTime(request.getExpiryTime());
             payment.setGrossAmount(new BigDecimal(request.getGrossAmount()));
