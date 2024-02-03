@@ -362,20 +362,24 @@ public class UserServiceImpl implements UserService {
                 throw new IncorrectUserCredentialException("unidentified token user");
             }
             int count = 0;
-            if (!request.getFullName().isEmpty()) {
+            if (request.getFullName() != null && !request.getFullName().isEmpty() ) {
                 checkDataDBUser.get().setFullName(request.getFullName());
                 count++;
             }
-            if (!request.getCity().isEmpty()) {
+            if (request.getCity() != null && !request.getCity().isEmpty()) {
                 checkDataDBUser.get().setCity(request.getCity());
                 count++;
             }
-            if (request.getDateOfBirth() != null) {
+            if (request.getDateOfBirth() != null && !request.getDateOfBirth().toString().isEmpty()) {
                 checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
                 count++;
             }
-            if (!request.getPhoneNumber().isEmpty()) {
+            if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
                 checkDataDBUser.get().setPhoneNumber(request.getPhoneNumber());
+                count++;
+            }
+            if (request.getGender() != null && !request.getGender().isEmpty()) {
+                checkDataDBUser.get().setGender(request.getGender());
                 count++;
             }
             if (count > 0) {
