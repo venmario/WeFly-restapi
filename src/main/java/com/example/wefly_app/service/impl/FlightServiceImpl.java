@@ -71,19 +71,26 @@ public class FlightServiceImpl implements FlightService {
                     !checkDataDBDepartureAirport.isPresent() ? "Departure Airport with id " + request.getDepartureAirportId() : null
             ).filter(Objects::nonNull).collect(Collectors.joining(","));
             if (!missingEntities.isEmpty()) throw new EntityNotFoundException(missingEntities + " not found");
-            Flight flight = new Flight();
-            flight.setDepartureDate(request.getDepartureDate());
-            flight.setArrivalDate(request.getArrivalDate());
-            flight.setDepartureTime(request.getDepartureTime());
-            flight.setArrivalTime(request.getArrivalTime());
-            flight.setDepartureAirport(checkDataDBDepartureAirport.get());
-            flight.setArrivalAirport(checkDataDBArrivalAirport.get());
-            flight.setAirplane(checkDataDBAirplane.get());
-            flight.setBasePrice(request.getBasePrice());
-            flight.setFlightClasses(setFlightClass(checkDataDBAirplane.get(), flight, request.getBasePrice()));
-
-            log.info("Flight Saved");
-            return templateResponse.success(flightRepository.save(flight));
+            LocalDate depart = request.getDepartureDate();
+            LocalDate arrival = request.getArrivalDate();
+            LocalDate schedule = request.getDepartureDate().plusMonths(3);
+            while (depart.isBefore(schedule)) {
+                Flight flight = new Flight();
+                flight.setDepartureDate(depart);
+                flight.setArrivalDate(arrival);
+                flight.setDepartureTime(request.getDepartureTime());
+                flight.setArrivalTime(request.getArrivalTime());
+                flight.setDepartureAirport(checkDataDBDepartureAirport.get());
+                flight.setArrivalAirport(checkDataDBArrivalAirport.get());
+                flight.setAirplane(checkDataDBAirplane.get());
+                flight.setBasePrice(request.getBasePrice());
+                flight.setFlightClasses(setFlightClass(checkDataDBAirplane.get(), flight, request.getBasePrice()));
+                log.info("Flight Saved: " + flight.getDepartureDate());
+                flightRepository.save(flight);
+                depart = depart.plusDays(1);
+                arrival = arrival.plusDays(1);
+            }
+            return templateResponse.success("Flight Saved until " + depart);
         } catch (Exception e) {
             log.error("Error Saving Flight", e);
             throw e;

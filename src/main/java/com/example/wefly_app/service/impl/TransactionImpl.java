@@ -227,6 +227,8 @@ public class TransactionImpl implements TransactionService {
             Payment payment = checkDataDBTransaction.get().getPayment();
             if (request.getTransactionStatus().matches("settlement|capture")) {
                 payment.setTransactionStatus("PAID");
+            } else {
+                payment.setTransactionStatus(request.getTransactionStatus());
             }
             payment.setSettlementTime(request.getSettlementTime());
             payment.setExpiryTime(request.getExpiryTime());
@@ -337,7 +339,9 @@ public class TransactionImpl implements TransactionService {
     }
 
     @Override
-    public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, String startDate, String endDate, String status) {
+    public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType,
+                                      String startDate, String endDate, String paymentStatus,
+                                      String exceptionStatus) {
         try {
             log.info("get all transaction");
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -359,9 +363,13 @@ public class TransactionImpl implements TransactionService {
                     predicates.add(criteriaBuilder.between(root.get("createdDate").as(LocalDate.class), start, end));
                     log.info("filtering by date range");
                 }
-                if (status != null && !status.isEmpty()) {
-                    predicates.add(criteriaBuilder.equal(root.get("payment").get("transactionStatus"), status.toUpperCase()));
+                if (paymentStatus != null && !paymentStatus.isEmpty()) {
+                    predicates.add(criteriaBuilder.equal(root.get("payment").get("transactionStatus"), paymentStatus.toUpperCase()));
                     log.info("filtering by status");
+                }
+                if (exceptionStatus != null && !exceptionStatus.isEmpty()) {
+                    predicates.add(criteriaBuilder.notEqual(root.get("payment").get("transactionStatus"), exceptionStatus.toUpperCase()));
+                    log.info("filtering by exception status");
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
             });

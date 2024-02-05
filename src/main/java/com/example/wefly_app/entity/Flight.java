@@ -22,6 +22,7 @@ public class Flight extends AbstractDate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 //    private String flightNumber;
+//    private String flightCode;
 
     @ManyToOne
     @JoinColumn(name = "departure_airport_id")
@@ -49,4 +50,8 @@ public class Flight extends AbstractDate implements Serializable {
     private LocalTime arrivalTime;
     @Column(name = "base_price",precision = 14)
     private BigDecimal basePrice;
+
+//    public void setFlightCode(String flightCode) {
+//        this.flightCode = flightCode.toUpperCase();
+//    }
 }

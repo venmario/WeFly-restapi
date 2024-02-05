@@ -14,7 +14,8 @@ public interface TransactionService {
     Map<Object,Object> delete(Long request);
     Map<Object, Object> getById(Long request);
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType
-            , String startDate, String endDate, String status);
+            , String startDate, String endDate, String paymentStatus,
+                               String exceptionStatus);
 //    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
     Map<Object, Object> midtransGetResponse(MidtransResponseModel orderId);
 //    Map<Object, Object> savePayment(PaymentRegisterModel request);

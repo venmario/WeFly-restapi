@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.Column;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +12,8 @@ import java.time.LocalTime;
 
 @Data
 public class FlightRegisterModel {
+//    @NotEmpty(message = "flight code is required")
+//    private String flightCode;
     @NotNull(message = "departure airport is required")
     private Long departureAirportId;
     @NotNull(message = "arrival airport is required")

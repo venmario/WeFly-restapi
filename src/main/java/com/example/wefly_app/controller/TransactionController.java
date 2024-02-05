@@ -48,8 +48,11 @@ public class TransactionController {
                                        @RequestParam(required = false, defaultValue = "ascending") String orderType,
                                        @RequestParam(required = false) String startDate,
                                        @RequestParam(required = false) String endDate,
-                                       @RequestParam(required = false) String status) {
-        return new ResponseEntity<>(transactionService.getAll(page, size, orderBy, orderType, startDate, endDate, status), HttpStatus.OK);
+                                       @RequestParam(required = false) String status,
+                                      @RequestParam(required = false) String paymentStatus,
+                                      @RequestParam(required = false) String exceptionStatus) {
+        return new ResponseEntity<>(transactionService.getAll(page, size, orderBy, orderType, startDate, endDate,
+                paymentStatus, exceptionStatus), HttpStatus.OK);
     }
 
     @PostMapping(value = {"/midtransNotification-test", "/midtransNotification-test/"})

@@ -30,10 +30,10 @@ public class UserController {
     }
 
 //    @PreAuthorize("hasROLE('ROLE_USER')")
-//    @GetMapping(value = {"/detail-profile", "/detail-profile/"})
-//    public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
-//        return new ResponseEntity<>(userService.getById(id), HttpStatus.OK);
-//    }
+    @GetMapping(value = {"/detail-profile/{id}", "/detail-profile/"})
+    public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(userService.getById(id), HttpStatus.OK);
+    }
 
 
     @GetMapping(value = {"/test", "/test/"})
