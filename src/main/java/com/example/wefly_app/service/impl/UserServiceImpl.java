@@ -420,12 +420,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<Object, Object> getById(Long id) {
+    public Map<Object, Object> getByIdUser() {
         try {
             log.info("Get User");
-            if (id == null) return templateResponse.error("Id is required");
-            Optional<User> checkDataDBUser = userRepository.findById(id);
-            if (!checkDataDBUser.isPresent()) return templateResponse.error("User not Found");
+            ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attribute.getRequest().getAttribute("userId");
+            System.out.println("userId : " + userId);
+            Optional<User> checkDataDBUser = userRepository.findById(userId);
+            if (!checkDataDBUser.isPresent()) {
+                log.error("User Error: unidentified, user not found");
+                throw new IncorrectUserCredentialException("unidentified token user");
+            }
 
             log.info("User Found");
             return templateResponse.success(checkDataDBUser.get());
