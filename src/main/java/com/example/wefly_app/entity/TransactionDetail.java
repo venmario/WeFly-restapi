@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Table(name = "transaction_detail")
 @Entity
 @Data
-public class TransactionDetail {
+public class TransactionDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

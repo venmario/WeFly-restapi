@@ -186,7 +186,7 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
-                                      Long arrivalAirportId, Long airLineId, String departDate,
+                                      Long arrivalAirportId, Long airLineId, String departureDate,
                                       String departureTime, String arrivalTime, Integer numberOfPassengers,
                                       String seatClass) {
         try {
@@ -195,7 +195,7 @@ public class FlightServiceImpl implements FlightService {
             Specification<FlightClass> specification = ((root, query, criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<>();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                LocalDate depart = LocalDate.parse(departDate, formatter);
+                LocalDate depart = LocalDate.parse(departureDate, formatter);
                 predicates.add(criteriaBuilder.equal(root.get("flight").get("departureDate"), depart));
                 predicates.add(criteriaBuilder.equal(root.get("flight").get("departureAirport").get("id"), departureAirportId));
                 predicates.add(criteriaBuilder.equal(root.get("flight").get("arrivalAirport").get("id"), arrivalAirportId));

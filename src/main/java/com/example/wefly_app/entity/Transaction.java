@@ -8,6 +8,7 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class Transaction extends AbstractDate implements Serializable {
     private Long id;
     private SeatClass seatClass;
 
-//    @JsonBackReference
+//  @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -31,7 +32,7 @@ public class Transaction extends AbstractDate implements Serializable {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<TransactionDetail> transactionDetails;
+    private List<TransactionDetail> transactionDetails = new ArrayList<>();
 
     @JsonManagedReference
     @OneToOne(cascade = CascadeType.ALL)
