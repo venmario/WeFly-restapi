@@ -34,12 +34,11 @@ public class AirportController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @DeleteMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Map> delete(@Valid @RequestBody AirportDeleteModel request, @PathVariable(value = "id") Long id) {
         return new ResponseEntity<>(airportService.delete(request ,id), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
         return new ResponseEntity<>(airportService.getById(id), HttpStatus.OK);

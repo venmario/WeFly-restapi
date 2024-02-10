@@ -39,7 +39,6 @@ public class FlightController {
         return new ResponseEntity<>(flightService.delete(request, id), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
         return new ResponseEntity<>(flightService.getById(id), HttpStatus.OK);
