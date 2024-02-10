@@ -3,6 +3,7 @@ package com.example.wefly_app.controller;
 import com.example.wefly_app.util.TemplateResponse;
 import com.example.wefly_app.util.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -30,6 +31,14 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(SpelEvaluationException.class)
+    public ResponseEntity<Map<Object, Object>> handleSpelEvaluationException(SpelEvaluationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", "Unauthorized User");
+        errors.put("cause", ex.getMessage());
+        return new ResponseEntity<>(templateResponse.error(errors), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

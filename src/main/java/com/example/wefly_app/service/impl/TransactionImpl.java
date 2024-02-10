@@ -7,8 +7,10 @@ import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.TransactionService;
+import com.example.wefly_app.util.FileStorageProperties;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
+import com.example.wefly_app.util.exception.FileStorageException;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
 import com.example.wefly_app.util.exception.ValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +40,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,6 +60,10 @@ import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
@@ -71,9 +79,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class TransactionImpl implements TransactionService {
-//    @Value("${app.upload.payment.proof}")//FILE_SHOW_RUL
-//    private String BASE_UPLOAD_FOLDER;
-//    private final Path fileStorageLocation;
+    private final String invoiceBasePath;
+    private final Path fileStorageLocation;
 //    @Autowired
 //    public TransactionImpl (FileStorageProperties fileStorageProperties) {
 //        this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
@@ -98,7 +105,8 @@ public class TransactionImpl implements TransactionService {
     public TransactionImpl (@Value("${midtrans.server-key}") String serverKey,
                             TransactionRepository transactionRepository, UserRepository userRepository,
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
-                            SimpleStringUtils simpleStringUtils, BankRepository bankRepository, PaymentRepository paymentRepository) {
+                            SimpleStringUtils simpleStringUtils, BankRepository bankRepository, PaymentRepository paymentRepository,
+                            @Value("${app.upload.payment.invoice}") String invoiceBasePath, FileStorageProperties fileStorageProperties) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -107,6 +115,14 @@ public class TransactionImpl implements TransactionService {
         this.simpleStringUtils = simpleStringUtils;
         this.bankRepository = bankRepository;
         this.paymentRepository = paymentRepository;
+        this.invoiceBasePath = invoiceBasePath;
+        this.fileStorageLocation = Paths.get(fileStorageProperties.getInvoiceDir())
+                .toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(this.fileStorageLocation);
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
+        }
     }
 
     @Transactional
@@ -238,6 +254,7 @@ public class TransactionImpl implements TransactionService {
         return midtransRequest;
     }
 
+    @Transactional
     public Map<Object, Object> midtransGetResponse (MidtransResponseModel request) {
         log.info("midtrans response");
         try {
@@ -251,11 +268,6 @@ public class TransactionImpl implements TransactionService {
                 throw new EntityNotFoundException("transaction not found");
             }
             Payment payment = checkDataDBTransaction.get().getPayment();
-            if (request.getTransactionStatus().matches("settlement|capture")) {
-                payment.setTransactionStatus("PAID");
-            } else {
-                payment.setTransactionStatus(request.getTransactionStatus());
-            }
             payment.setSettlementTime(request.getSettlementTime());
             payment.setExpiryTime(request.getExpiryTime());
             payment.setGrossAmount(new BigDecimal(request.getGrossAmount()));
@@ -295,11 +307,48 @@ public class TransactionImpl implements TransactionService {
                 default:
                     payment.setIssuer("unknown");
             }
+            if (request.getTransactionStatus().matches("settlement|capture")) {
+                payment.setTransactionStatus("PAID");
+                payment = generateInvoice(payment);
+            } else {
+                payment.setTransactionStatus(request.getTransactionStatus());
+            }
             log.info("midtrans response update success");
             return templateResponse.success(paymentRepository.save(payment));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Resource getInvoice(Long transactionId) {
+        try {
+            log.info("get invoice");
+            ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attribute.getRequest().getAttribute("userId");
+            log.info("Update User : " + userId);
+            Optional<User> checkDataDBUser = userRepository.findById(userId);
+            log.info("Update User : " + userId);
+            if (!checkDataDBUser.isPresent()) {
+                throw new IncorrectUserCredentialException("unidentified token user");
+            }
+            Optional<Transaction> checkDataDBTransaction = transactionRepository.findById(transactionId);
+            if (checkDataDBTransaction.get().getUser().getId() != userId)
+                throw new ValidationException("transaction not found");
+            Path filePath = this.fileStorageLocation.resolve(checkDataDBTransaction.get().getPayment().getInvoice()).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) throw new FileStorageException("File not found " + filePath);
+            else {
+                log.info("get invoice succeed");
+                return resource;
+            }
+        } catch (MalformedURLException ex) {
+            log.error("get payment proof error ", ex);
+            throw new FileStorageException("File not found ", ex);
+        }
+
     }
 
     public boolean midtransValidator (MidtransResponseModel request) throws NoSuchAlgorithmException {
@@ -417,13 +466,15 @@ public class TransactionImpl implements TransactionService {
 
 
     @Transactional
-    public void generateInvoice (Transaction request) throws IOException {
+    public Payment generateInvoice(Payment request) throws IOException {
         log.info("generate invoice");
-        String path = "invoice/invoice.pdf";
+        Transaction transaction = request.getTransaction();
+        String fileName = "invoice-" + transaction.getId() + ".pdf";
+        String path = "invoice/" + fileName;
         PdfWriter writer = new PdfWriter(path);
         PdfDocument pdf = new PdfDocument(writer);
         try (Document document = new Document(pdf, PageSize.A4)) {
-            InvoiceDTO invoiceDTO = getInvoiceDTO(request);
+            InvoiceDTO invoiceDTO = getInvoiceDTO(transaction);
             ImageData imageData = ImageDataFactory.create("invoice/properties/logo.png");
             Image image = new Image(imageData).setHeight(80).setWidth(80)
                     .setHorizontalAlignment(HorizontalAlignment.RIGHT);
@@ -437,7 +488,7 @@ public class TransactionImpl implements TransactionService {
 
 // First cell with content aligned to the left
             Cell leftCell = new Cell().add(new Paragraph("Invoice" +
-                            "\n" + "Order Id: " + "156")
+                            "\n" + "Order Id: " + transaction.getId())
                             .setFontSize(14))
                     .setVerticalAlignment(VerticalAlignment.MIDDLE)
                     .setBorder(Border.NO_BORDER)
@@ -459,7 +510,7 @@ public class TransactionImpl implements TransactionService {
 
             // Create a table with three columns
             Table table1 = new Table(new float[]{1, 2, 1}); // Adjust column ratios as needed
-            table1.setWidth(UnitValue.createPercentValue(80)); // Set table width to 100% of the page width
+            table1.setWidth(UnitValue.createPercentValue(80)); // Set table width of the page width
 
 // Define custom border for cells
             Border solidBorder = new SolidBorder(0.3f);
@@ -584,12 +635,14 @@ public class TransactionImpl implements TransactionService {
             totalTable.addCell(new Cell().add(new Paragraph(" ")).setBorder(Border.NO_BORDER));
             totalTable.addCell(grandTotalLabelCell);
             totalTable.addCell(grandTotalValueCell);
-
 // Add the total table to the document
             document.add(totalTable);
         } catch (Exception e) {
             log.error("Error while generating invoice", e);
         }
+        log.info("generate invoice success");
+        request.setInvoice(fileName);
+        return request;
     }
 
     @Transactional
@@ -613,26 +666,26 @@ public class TransactionImpl implements TransactionService {
     }
 
 
-//    @Override
-//    public Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType) {
-//        try {
-//            log.info("get all bank");
-//            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
-//            Specification<Bank> specification = ((root, criteriaQuery, criteriaBuilder) -> {
-//                List<Predicate> predicates = new ArrayList<>();
-//                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-//            });
-//            Page<Bank> list = bankRepository.findAll(specification, pageable);
-//            Map<Object, Object> map = new HashMap<>();
-//            map.put("data", list);
-//            log.info("get all bank succeed");
-//            return map;
-//
-//        } catch (Exception e) {
-//            log.error("get all bank error ", e);
-//            throw e;
-//        }
-//    }
+    @Override
+    public Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType) {
+        try {
+            log.info("get all bank");
+            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
+            Specification<Bank> specification = ((root, criteriaQuery, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            });
+            Page<Bank> list = bankRepository.findAll(specification, pageable);
+            Map<Object, Object> map = new HashMap<>();
+            map.put("data", list);
+            log.info("get all bank succeed");
+            return map;
+
+        } catch (Exception e) {
+            log.error("get all bank error ", e);
+            throw e;
+        }
+    }
 
 //    @Override
 //    public Map<Object, Object> savePayment(PaymentRegisterModel request) {

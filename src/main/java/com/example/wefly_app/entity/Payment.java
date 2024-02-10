@@ -35,6 +35,7 @@ public class Payment implements Serializable {
     @OneToOne(mappedBy = "payment")
     private Transaction transaction;
     private String token;
+    private String invoice;
 
     public void setTransactionStatus(String transactionStatus) {
         this.transactionStatus = transactionStatus.toUpperCase();

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,25 +21,25 @@ public class AirportController {
     @Autowired
     public AirportService airportService;
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = {"/save", "/save/"})
     public ResponseEntity<Map> save(@Valid @RequestBody AirportRegisterModel request) {
         return new ResponseEntity<>(airportService.save(request), HttpStatus.OK);
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<Map> update(@Valid @RequestBody AirportUpdateModel request, @PathVariable(value = "id") Long id) {
         return new ResponseEntity<>(airportService.update(request, id), HttpStatus.OK);
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping(value = "/delete/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Map> delete(@Valid @RequestBody AirportDeleteModel request, @PathVariable(value = "id") Long id) {
         return new ResponseEntity<>(airportService.delete(request ,id), HttpStatus.OK);
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<Map> getById(@PathVariable("id") Long id) {
         return new ResponseEntity<>(airportService.getById(id), HttpStatus.OK);

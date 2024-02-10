@@ -16,8 +16,9 @@ public interface TransactionService {
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType
             , String startDate, String endDate, String paymentStatus,
                                String exceptionStatus);
-//    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
+    Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType);
     Map<Object, Object> midtransGetResponse(MidtransResponseModel orderId);
+    Resource getInvoice (Long transactionId);
 //    Map<Object, Object> savePayment(PaymentRegisterModel request);
 //    Map<Object, Object> savePaymentProof(MultipartFile file, Long paymentId) throws IOException;
 //    Resource getPaymentProof(Long paymentId);
