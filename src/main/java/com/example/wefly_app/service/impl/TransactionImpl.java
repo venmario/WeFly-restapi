@@ -482,7 +482,7 @@ public class TransactionImpl implements TransactionService {
         PdfDocument pdf = new PdfDocument(writer);
         try (Document document = new Document(pdf, PageSize.A4)) {
             InvoiceDTO invoiceDTO = getInvoiceDTO(transaction);
-            ImageData imageData = ImageDataFactory.create("invoice/properties/logo.png");
+            ImageData imageData = ImageDataFactory.create("properties/logo.png");
             Image image = new Image(imageData).setHeight(80).setWidth(80)
                     .setHorizontalAlignment(HorizontalAlignment.RIGHT);
 

@@ -200,7 +200,7 @@ public class CheckInServiceImpl implements CheckinService {
         }
         PdfDocument pdf = new PdfDocument(writer);
         try (Document document = new Document(pdf, PageSize.A4)){
-            ImageData imageData = ImageDataFactory.create("e-ticket/properties/logo.png");
+            ImageData imageData = ImageDataFactory.create("properties/logo.png");
             Image image = new Image(imageData);
             PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -392,7 +392,7 @@ public class CheckInServiceImpl implements CheckinService {
     public void generateBoardingPass(Document document, BoardingPassDTO boardingPassDTO, BoardingPass boardingPass) {
         try {
             DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            String fontPath = "boarding-pass/properties/LiberationSBold.ttf";
+            String fontPath = "properties/LiberationSBold.ttf";
             PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             PdfFont boldFont = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H);
             PdfFont italicFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_OBLIQUE);
