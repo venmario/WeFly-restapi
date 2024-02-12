@@ -2,23 +2,24 @@ package com.example.wefly_app.service;
 
 
 import com.example.wefly_app.entity.User;
-import com.example.wefly_app.request.LoginModel;
-import com.example.wefly_app.request.RegisterGoogleModel;
-import com.example.wefly_app.request.RegisterModel;
-import com.example.wefly_app.request.UpdateUserModel;
+import com.example.wefly_app.request.user.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
+import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 
 public interface UserService {
-    Map registerManual(RegisterModel objModel) ;
-    Map registerByGoogle(RegisterGoogleModel objModel);
-    public Map login(LoginModel objLogin);
-    Map<Object, Object> getById(Long id);
+    Map<Object, Object> registerManual(ManualRegisterModel request) ;
+    Map<String, Object> loginByGoogle(String request) throws IOException;
+    Map<String, Object> login(LoginModel request);
+    Map<Object, Object> accountActivation(String request);
+    Map<Object, Object> forgotPasswordRequest(ForgotPasswordModel request);
+    Map<Object, Object> changePassword(ChangePasswordModel request);
+    Map<Object, Object> checkOtpValidity(String request);
     Map<Object, Object> delete(User request);
     Map<Object, Object> update(UpdateUserModel request);
-    Map<Object, Object> getIdByUserName(String username);
-    Map<Object, Object> getDetailProfile(Principal principal);
+    Map<Object, Object> getByIdUser();
+//    Map<Object, Object> getIdByUserName(String username);
+//    Map<Object, Object> getDetailProfile(Principal principal);
 }
 

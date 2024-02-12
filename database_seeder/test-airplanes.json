@@ -1,0 +1,235 @@
+[
+  {
+    "type": "AIRBUS-A320",
+    "airlineId": 1,
+    "code": "PK-EXA",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A320",
+    "airlineId": 1,
+    "code": "PK-EXB",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A330",
+    "airlineId": 1,
+    "code": "PK-EXC",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A330",
+    "airlineId": 1,
+    "code": "PK-EXD",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-737",
+    "airlineId": 1,
+    "code": "PK-EXE",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-737",
+    "airlineId": 1,
+    "code": "PK-EXF",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-727",
+    "airlineId": 1,
+    "code": "PK-EXG",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-727",
+    "airlineId": 1,
+    "code": "PK-EXH",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A320",
+    "airlineId": 1,
+    "code": "PK-EXI",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A320",
+    "airlineId": 1,
+    "code": "PK-EXJ",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A330",
+    "airlineId": 1,
+    "code": "PK-EXK",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "AIRBUS-A330",
+    "airlineId": 1,
+    "code": "PK-EXL",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-737",
+    "airlineId": 1,
+    "code": "PK-EXM",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-737",
+    "airlineId": 1,
+    "code": "PK-EXN",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-727",
+    "airlineId": 1,
+    "code": "PK-EXO",
+    "seats": [
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 30,
+        "numberOfRow": 6
+      }
+    ]
+  },
+  {
+    "type": "BOEING-727",
+    "airlineId": 1,
+    "code": "PK-EXP",
+    "seats": [
+      {
+        "seatClass": "BUSINESS",
+        "numberOfColumn": 5,
+        "numberOfRow": 4
+      },
+      {
+        "seatClass": "ECONOMY",
+        "numberOfColumn": 20,
+        "numberOfRow": 6
+      }
+    ]
+  }
+]
+

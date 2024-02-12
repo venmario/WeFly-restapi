@@ -1,5 +1,7 @@
 package com.example.wefly_app.entity;
 
+import com.example.wefly_app.entity.enums.Provider;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -54,6 +56,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     @Column(length = 100, nullable = true)
     private String otp;
 
+    @JsonIgnore
     private Date otpExpiredDate;
 
     @Setter
@@ -73,6 +76,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     @Column(name = "credential_not_expired")
     private boolean credentialsNonExpired = true;
 
+    @JsonBackReference
     @ManyToMany(targetEntity = Role.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "oauth_user_role",
@@ -83,7 +87,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
                     @JoinColumn(name = "role_id")
             }
     )
-    private List<Role> roles = new ArrayList<>();
+    private List<Role> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

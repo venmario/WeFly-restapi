@@ -1,0 +1,402 @@
+[
+  {
+    "iata": "BDO",
+    "icao": "WICC",
+    "name": "Husein Sastranegara International Airport",
+    "city": "Bandung",
+    "province": "West Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BWX",
+    "icao": "WADY",
+    "name": "Banyuwangi International Airport",
+    "city": "Banyuwangi",
+    "province": "East Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BXW",
+    "icao": "WARW",
+    "name": "Harun Thohir Airport",
+    "city": "Bawean (Gresik)",
+    "province": "East Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "CBN",
+    "icao": "WICD",
+    "name": "Cakrabhuwana Airport",
+    "city": "Cirebon",
+    "province": "West Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "CGK",
+    "icao": "WIII",
+    "name": "Soekarno-Hatta International Airport",
+    "city": "Jakarta (Tangerang)",
+    "province": "Banten",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "CXP",
+    "icao": "WAHL",
+    "name": "Tunggul Wulung Airport",
+    "city": "Cilacap",
+    "province": "Central Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "DPS",
+    "icao": "WADD",
+    "name": "Ngurah Rai International Airport",
+    "city": "Denpasar",
+    "province": "Bali",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "HLP",
+    "icao": "WIHH",
+    "name": "Halim Perdanakusuma International Airport",
+    "city": "Jakarta",
+    "province": "Special Capital Region of Jakarta",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "JBB",
+    "icao": "WARE",
+    "name": "Notohadinegoro Airport",
+    "city": "Jember",
+    "province": "East Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "JOG",
+    "icao": "WAHH",
+    "name": "Adisucipto International Airport",
+    "city": "Yogyakarta",
+    "province": "Special Region of Yogyakarta",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "KJT",
+    "icao": "WICA",
+    "name": "Kertajati International Airport",
+    "city": "Majalengka",
+    "province": "West Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "KWB",
+    "icao": "WAHU",
+    "name": "Dewadaru Airport",
+    "city": "Karimunjawa (Jepara)",
+    "province": "Central Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "MLG",
+    "icao": "WARA",
+    "name": "Abdul Rachman Saleh Airport",
+    "city": "Malang",
+    "province": "East Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PCB",
+    "icao": "WIHP",
+    "name": "Pondok Cabe Airport",
+    "city": "Tangerang Selatan",
+    "province": "Banten",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PWL",
+    "icao": "WICP",
+    "name": "Wirasaba Aiport",
+    "city": "Purbalingga",
+    "province": "Central Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "SOC",
+    "icao": "WAHQ",
+    "name": "Adisumarmo International Airport",
+    "city": "Surakarta (Boyolali)",
+    "province": "Central Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "SRG",
+    "icao": "WAHS",
+    "name": "Ahmad Yani International Airport",
+    "city": "Semarang",
+    "province": "Central Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "SUB",
+    "icao": "WARR",
+    "name": "Juanda International Airport",
+    "city": "Surabaya (Sidoarjo)",
+    "province": "East Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TSY",
+    "icao": "WICM",
+    "name": "Wiriadinata Airport",
+    "city": "Tasikmalaya",
+    "province": "West Java",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "YIA",
+    "icao": "WAHI",
+    "name": "Yogyakarta International Airport",
+    "city": "Yogyakarta (Kulon Progo)",
+    "province": "Special Region of Yogyakarta",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "AEG",
+    "icao": "WIME",
+    "name": "Aek Godang Airport",
+    "city": "Padang Sidempuan",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BKS",
+    "icao": "WIGG",
+    "name": "Fatmawati Soekarno Airport",
+    "city": "Bengkulu",
+    "province": "Bengkulu",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BTH",
+    "icao": "WIDD",
+    "name": "Hang Nadim Internatonal Airport",
+    "city": "Batam",
+    "province": "Riau Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BTJ",
+    "icao": "WITT",
+    "name": "Sultan Iskandar Muda International Airport",
+    "city": "Banda Aceh",
+    "province": "Aceh",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "BUU",
+    "icao": "WIPI",
+    "name": "Muara Bungo Airport",
+    "city": "Muara Bungo",
+    "province": "Jambi",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "DJB",
+    "icao": "WIJJ",
+    "name": "Sultan Thaha Airport",
+    "city": "Jambi",
+    "province": "Jambi",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "DTB",
+    "icao": "WIMN",
+    "name": "Sisingamangaraja XII International Airport",
+    "city": "Siborong-borong",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "DUM",
+    "icao": "WIBD",
+    "name": "Pinang Kampai Airport",
+    "city": "Dumai",
+    "province": "Riau",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "FLZ",
+    "icao": "WIMS",
+    "name": "Ferdinand Lumban Tobing Airport",
+    "city": "Sibolga",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "GNS",
+    "icao": "WIMB",
+    "name": "Binaka Airport",
+    "city": "Gunung Sitoli",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "KNO",
+    "icao": "WIMM",
+    "name": "Kualanamu International Airport",
+    "city": "Medan (Deli Serdang)",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "KRC",
+    "icao": "WIPH",
+    "name": "Depati Parbo Airport",
+    "city": "Kerinci",
+    "province": "Jambi",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "LLG",
+    "icao": "WIPB",
+    "name": "Silampari Airport",
+    "city": "Lubuklinggau",
+    "province": "South Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "LSW",
+    "icao": "WITM",
+    "name": "Malikus Saleh Airport",
+    "city": "Lhokseumawe",
+    "province": "Aceh",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "MEQ",
+    "icao": "WITC",
+    "name": "Cut Nyak Dien Airport",
+    "city": "Suka Makmue (Nagan Raya)",
+    "province": "Aceh",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "MES",
+    "icao": "WIMK",
+    "name": "Soewondo Air Force Base",
+    "city": "Medan",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "NTX",
+    "icao": "WION",
+    "name": "Ranai Airport",
+    "city": "Ranai",
+    "province": "Riau Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PDG",
+    "icao": "WIEE",
+    "name": "Minangkabau International Airport",
+    "city": "Padang",
+    "province": "West Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PGK",
+    "icao": "WIPK",
+    "name": "Depati Amir Airport",
+    "city": "Pangkal Pinang",
+    "province": "Bangka-Belitung Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PKU",
+    "icao": "WIBB",
+    "name": "Sultan Syarif Kasim II International Airport",
+    "city": "Pekanbaru",
+    "province": "Riau",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "PLM",
+    "icao": "WIPP",
+    "name": "Sultan Mahmud Badaruddin II International Airport",
+    "city": "Palembang",
+    "province": "South Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "RGT",
+    "icao": "WIBJ",
+    "name": "Japura Airport",
+    "city": "Rengat",
+    "province": "Riau",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "RKI",
+    "icao": "WIBR",
+    "name": "Rokot Airport",
+    "city": "Sipora (Mentawai Islands)",
+    "province": "West Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "SBG",
+    "icao": "WIAB",
+    "name": "Maimun Saleh Airport",
+    "city": "Sabang",
+    "province": "Aceh",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "SIW",
+    "icao": "WIMP",
+    "name": "Sibisa Airport",
+    "city": "Simalungun",
+    "province": "North Sumatra",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TJB",
+    "icao": "WIBT",
+    "name": "Raja Haji Abdullah Airport",
+    "city": "Tanjung Balai Karimun",
+    "province": "Riau Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TJQ",
+    "icao": "WIKT",
+    "name": "H.A.S. Hanandjoeddin International Airport",
+    "city": "Tanjung Pandan",
+    "province": "Bangka-Belitung Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TKG",
+    "icao": "WILL",
+    "name": "Radin Inten II International Airport",
+    "city": "Bandar Lampung",
+    "province": "Lampung",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TNJ",
+    "icao": "WIDN",
+    "name": "Raja Haji Fisabilillah International Airport",
+    "city": "Tanjung Pinang",
+    "province": "Riau Islands",
+    "country": "Indonesia"
+  },
+  {
+    "iata": "TXE",
+    "icao": "WITK",
+    "name": "Takengon Rembele Airport",
+    "city": "Takengon",
+    "province": "Aceh",
+    "country": "Indonesia"
+  }
+]

@@ -1,4 +1,4 @@
-package com.example.wefly_app.request;
+package com.example.wefly_app.request.user;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 
 
 @Data
-public class ResetPasswordModel {
+public class ChangePasswordModel {
     @NotEmpty(message = "email is required")
     private String email;
     @NotEmpty(message = "new password required")

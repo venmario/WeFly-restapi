@@ -36,8 +36,8 @@ public class OAuth2Sample {
     private static final String APPLICATION_NAME = "";
 
     /** Directory to store user credentials. */
-    private static final java.io.File DATA_STORE_DIR =
-            new java.io.File(System.getProperty("user.home"), ".store/oauth2_sample");
+//    private static final java.io.File DATA_STORE_DIR =
+//            new java.io.File(System.getProperty("user.home"), ".store/oauth2_sample");
 
     /**
      * Global instance of the {@link DataStoreFactory}. The best practice is to make it a single
@@ -72,8 +72,7 @@ public class OAuth2Sample {
         }
         // set up authorization code flow
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                httpTransport, JSON_FACTORY, clientSecrets, SCOPES).setDataStoreFactory(
-                dataStoreFactory).build();
+                httpTransport, JSON_FACTORY, clientSecrets, SCOPES).build();
         // authorize
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
@@ -81,7 +80,7 @@ public class OAuth2Sample {
     public static void main(String[] args) {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
+//            dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
             // authorization
             Credential credential = authorize();
             // set up global Oauth2 instance

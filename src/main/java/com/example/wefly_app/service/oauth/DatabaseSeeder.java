@@ -1,13 +1,14 @@
 package com.example.wefly_app.service.oauth;
 
-import com.example.wefly_app.entity.Client;
-import com.example.wefly_app.entity.Role;
-import com.example.wefly_app.entity.RolePath;
-import com.example.wefly_app.entity.User;
-import com.example.wefly_app.repository.ClientRepository;
-import com.example.wefly_app.repository.RolePathRepository;
-import com.example.wefly_app.repository.RoleRepository;
-import com.example.wefly_app.repository.UserRepository;
+import com.example.wefly_app.entity.*;
+import com.example.wefly_app.repository.*;
+import com.example.wefly_app.request.airplane.AirplaneRegisterModel;
+import com.example.wefly_app.request.flight.FlightRegisterModel;
+import com.example.wefly_app.service.AirlineService;
+import com.example.wefly_app.service.AirplaneService;
+import com.example.wefly_app.service.FlightService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,13 +45,31 @@ public class DatabaseSeeder implements ApplicationRunner {
     private UserRepository userRepository;
 
     @Autowired
+    private AirportRepository airportRepository;
+
+    @Autowired
+    private AirlineRepository airlineRepository;
+
+    @Autowired
+    private AirplaneService airplaneService;
+
+    @Autowired
+    private AirplaneRepository airplaneRepository;
+
+    @Autowired
+    private FlightService flightService;
+
+    @Autowired
+    private FlightRepository flightRepository;
+
+    @Autowired
     private RolePathRepository rolePathRepository;
 
     private String defaultPassword = "password";
 
     private String[] users = new String[]{
             "admin@mail.com:ROLE_SUPERUSER ROLE_ADMIN",
-            "user@mail.com:ROLE_USER ROLE_USER_O ROLE_USER_OD"
+            "user@mail.com:ROLE_USER"
     };
 
     private String[] clients = new String[]{
@@ -70,12 +91,53 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     @Override
     @Transactional
-    public void run(ApplicationArguments applicationArguments) {
+    public void run(ApplicationArguments applicationArguments) throws IOException {
         String password = encoder.encode(defaultPassword);
 
         this.insertRoles();
         this.insertClients(password);
         this.insertUser(password);
+        this.insertAirports();
+        this.insertAirlines();
+        this.insertAirplanes();
+        this.insertFlights();
+    }
+
+    public void insertAirports() throws IOException {
+        if (airportRepository.count() == 0) {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Airport> airports = mapper.readValue(Paths.get("./database_seeder/indo-airports.json").toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, Airport.class));
+            airportRepository.saveAll(airports);
+        }
+    }
+
+    public void insertAirlines() throws IOException {
+        if (airlineRepository.count() == 0) {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Airline> airlines = mapper.readValue(Paths.get("./database_seeder/test-airlines.json").toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, Airline.class));
+            airlineRepository.saveAll(airlines);
+        }
+    }
+
+    public void insertAirplanes() throws IOException {
+        if (airplaneRepository.count() == 0) {
+            ObjectMapper mapper = new ObjectMapper();
+            List<AirplaneRegisterModel> airplanes = mapper.readValue(Paths.get("./database_seeder/test-airplanes.json").toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, AirplaneRegisterModel.class));
+            airplanes.forEach(airplaneService::save);
+        }
+    }
+
+    public void insertFlights() throws IOException {
+        if (flightRepository.count() == 0) {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModules(new JavaTimeModule());
+            List<FlightRegisterModel> flights = mapper.readValue(Paths.get("./database_seeder/test-flights.json").toFile(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, FlightRegisterModel.class));
+            flights.forEach(flightService::save);
+        }
     }
 
     @Transactional
