@@ -46,7 +46,7 @@ public class Flight extends AbstractDate implements Serializable {
     private List<FlightSchedule> flightSchedules;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    private LocalTime departureTime;
+    private LocalTime departTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime arrivalTime;
     @Column(name = "base_price",precision = 14)
