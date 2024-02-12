@@ -17,15 +17,19 @@ public class FlightClass implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private SeatClass seatClass;
-    @Column(name = "base_price_adult", precision = 14, scale = 2)
+    @Column(name = "base_price_adult", precision = 12)
     private BigDecimal basePriceAdult;
-    @Column(name = "base_price_child", precision = 14, scale = 2)
+    @Column(name = "base_price_child", precision = 12)
     private BigDecimal basePriceChild;
-    @Column(name = "base_price_infant", precision = 14, scale = 2)
+    @Column(name = "base_price_infant", precision = 12)
     private BigDecimal basePriceInfant;
     private Integer availableSeat;
     @JsonManagedReference
     @ManyToOne
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
+    @JoinColumn(name = "flight_schedule_id")
+    private FlightSchedule flightSchedule;
+//    @JsonManagedReference
+//    @ManyToOne
+//    @JoinColumn(name = "flight_id")
+//    private Flight flight;
 }

@@ -41,6 +41,8 @@ public class UserServiceImpl implements UserService {
 
     @Value("${BASEURL}")
     private String baseUrl;
+    @Value("${frontend.email.activation}")
+    private String activationUrl;
     @Autowired
     RoleRepository repoRole;
     @Autowired
@@ -133,7 +135,7 @@ public class UserServiceImpl implements UserService {
             User search;
             String otp;
             do {
-                otp = SimpleStringUtils.randomString(6, true);
+                otp = simpleStringUtils.randomString(6, true);
                 search = userRepository.findOneByOTP(otp); // need to be fixed later for performance purpose
             } while (search != null);
             Date dateNow = new Date();
@@ -145,7 +147,7 @@ public class UserServiceImpl implements UserService {
             user.setOtp(otp);
             user.setOtpExpiredDate(expirationDate);
             template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
-            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  baseUrl + "/v1/user-register/register-confirm-otp/" + otp);
+            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  activationUrl + otp);
             emailSender.sendAsync(user.getUsername(), "Register", template);
             userRepository.save(user);
 
@@ -268,7 +270,7 @@ public class UserServiceImpl implements UserService {
             User search;
             String otp;
             do {
-                otp = SimpleStringUtils.randomString(4, true);
+                otp = simpleStringUtils.randomString(4, true);
                 search = userRepository.findOneByOTP(otp);
             } while (search != null);
             Date dateNow = new Date();
@@ -360,20 +362,24 @@ public class UserServiceImpl implements UserService {
                 throw new IncorrectUserCredentialException("unidentified token user");
             }
             int count = 0;
-            if (!request.getFullName().isEmpty()) {
+            if (request.getFullName() != null && !request.getFullName().isEmpty() ) {
                 checkDataDBUser.get().setFullName(request.getFullName());
                 count++;
             }
-            if (!request.getCity().isEmpty()) {
+            if (request.getCity() != null && !request.getCity().isEmpty()) {
                 checkDataDBUser.get().setCity(request.getCity());
                 count++;
             }
-            if (request.getDateOfBirth() != null) {
+            if (request.getDateOfBirth() != null && !request.getDateOfBirth().toString().isEmpty()) {
                 checkDataDBUser.get().setDateOfBirth(request.getDateOfBirth());
                 count++;
             }
-            if (!request.getPhoneNumber().isEmpty()) {
+            if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
                 checkDataDBUser.get().setPhoneNumber(request.getPhoneNumber());
+                count++;
+            }
+            if (request.getGender() != null && !request.getGender().isEmpty()) {
+                checkDataDBUser.get().setGender(request.getGender());
                 count++;
             }
             if (count > 0) {
@@ -414,12 +420,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<Object, Object> getById(Long id) {
+    public Map<Object, Object> getByIdUser() {
         try {
             log.info("Get User");
-            if (id == null) return templateResponse.error("Id is required");
-            Optional<User> checkDataDBUser = userRepository.findById(id);
-            if (!checkDataDBUser.isPresent()) return templateResponse.error("User not Found");
+            ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attribute.getRequest().getAttribute("userId");
+            System.out.println("userId : " + userId);
+            Optional<User> checkDataDBUser = userRepository.findById(userId);
+            if (!checkDataDBUser.isPresent()) {
+                log.error("User Error: unidentified, user not found");
+                throw new IncorrectUserCredentialException("unidentified token user");
+            }
 
             log.info("User Found");
             return templateResponse.success(checkDataDBUser.get());

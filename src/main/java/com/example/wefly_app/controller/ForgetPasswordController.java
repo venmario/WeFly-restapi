@@ -31,7 +31,7 @@ public class ForgetPasswordController {
     @Transactional
     @PutMapping("/change-password")
     public ResponseEntity<Map> changePassword(@Valid @RequestBody ChangePasswordModel request) {
-        return new ResponseEntity<>(serviceReq.changePassword(request), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(serviceReq.changePassword(request), HttpStatus.OK);
     }
 
     @PostMapping("/check-token/{request}")

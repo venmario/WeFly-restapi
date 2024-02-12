@@ -12,13 +12,13 @@ import java.util.List;
 
 @Data
 public class AirplaneRegisterModel {
-    @NotEmpty(message = "name is required")
-    private String name;
     @NotEmpty(message = "type is required")
     private String type;
+    @NotEmpty(message = "code is required")
+    private String code;
     @NotNull(message = "seats configuration is required")
     @Valid
-    private List<AirplaneSeatRegisterModel> seats;
+    private List<SeatConfigRegisterModel> seats;
     @NotNull(message = "airline id is required")
     private Long airlineId;
 }

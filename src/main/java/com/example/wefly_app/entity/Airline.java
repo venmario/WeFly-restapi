@@ -18,6 +18,8 @@ public class Airline extends AbstractDate implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
+    @Column(unique = true)
+    private String code;
     @Column(name = "discount_child", precision = 5, scale = 2)
     private BigDecimal discountChild;
     @Column(name = "discount_infant", precision = 5, scale = 2)

@@ -1,14 +1,8 @@
 package com.example.wefly_app.service.impl;
 
-import com.example.wefly_app.entity.Airplane;
-import com.example.wefly_app.entity.Airport;
-import com.example.wefly_app.entity.Flight;
-import com.example.wefly_app.entity.FlightClass;
+import com.example.wefly_app.entity.*;
 import com.example.wefly_app.entity.enums.SeatClass;
-import com.example.wefly_app.repository.AirplaneRepository;
-import com.example.wefly_app.repository.AirportRepository;
-import com.example.wefly_app.repository.FlightClassRepository;
-import com.example.wefly_app.repository.FlightRepository;
+import com.example.wefly_app.repository.*;
 import com.example.wefly_app.request.flight.FlightDeleteModel;
 import com.example.wefly_app.request.flight.FlightRegisterModel;
 import com.example.wefly_app.request.flight.FlightUpdateModel;
@@ -28,9 +22,11 @@ import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,18 +39,21 @@ public class FlightServiceImpl implements FlightService {
     private final TemplateResponse templateResponse;
     private final SimpleStringUtils simpleStringUtils;
     private final AirportRepository airportRepository;
+    private final AirlineRepository airlineRepository;
     private final AirplaneRepository airplaneRepository;
     private final FlightClassRepository flightClassRepository;
     @Autowired
     public FlightServiceImpl (FlightRepository flightRepository, TemplateResponse templateResponse,
                                 SimpleStringUtils simpleStringUtils, AirportRepository airportRepository,
-                                AirplaneRepository airplaneRepository, FlightClassRepository flightClassRepository){
+                                AirlineRepository airlineRepository, FlightClassRepository flightClassRepository,
+                                AirplaneRepository airplaneRepository){
         this.flightRepository = flightRepository;
         this.templateResponse = templateResponse;
         this.simpleStringUtils = simpleStringUtils;
         this.airportRepository = airportRepository;
-        this.airplaneRepository = airplaneRepository;
+        this.airlineRepository = airlineRepository;
         this.flightClassRepository = flightClassRepository;
+        this.airplaneRepository = airplaneRepository;
     }
 
     @Transactional
@@ -64,30 +63,120 @@ public class FlightServiceImpl implements FlightService {
             log.info("Save New Flight");
             Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
             Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
+            Optional<Airline> checkDataDBAirline = airlineRepository.findById(request.getAirlineId());
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplaneId());
             String missingEntities = Stream.of(
+                    !checkDataDBAirline.isPresent() ? "Airline with id " + request.getAirplaneId() : null,
                     !checkDataDBAirplane.isPresent() ? "Airplane with id " + request.getAirplaneId() : null,
                     !checkDataDBArrivalAirport.isPresent() ? "Arrival Airport with id " + request.getArrivalAirportId() : null,
                     !checkDataDBDepartureAirport.isPresent() ? "Departure Airport with id " + request.getDepartureAirportId() : null
             ).filter(Objects::nonNull).collect(Collectors.joining(","));
             if (!missingEntities.isEmpty()) throw new EntityNotFoundException(missingEntities + " not found");
+            if (checkDataDBAirplane.get().getAirline().getId() != checkDataDBAirline.get().getId()) {
+                throw new IllegalArgumentException("Airplane with id " + request.getAirplaneId() + " not belong to Airline with id " + request.getAirlineId());
+            }
+            Long count = flightRepository.countByAirlineId(checkDataDBAirline.get().getId());
             Flight flight = new Flight();
-            flight.setDepartureDate(request.getDepartureDate());
-            flight.setArrivalDate(request.getArrivalDate());
+            flight.setFlightCode(checkDataDBAirline.get().getCode() + "-" + (count + 1));
             flight.setDepartureTime(request.getDepartureTime());
             flight.setArrivalTime(request.getArrivalTime());
             flight.setDepartureAirport(checkDataDBDepartureAirport.get());
             flight.setArrivalAirport(checkDataDBArrivalAirport.get());
             flight.setAirplane(checkDataDBAirplane.get());
             flight.setBasePrice(request.getBasePrice());
-            flight.setFlightClasses(setFlightClass(checkDataDBAirplane.get(), flight, request.getBasePrice()));
-
+            flight.setScheduleMonday(request.isScheduleMonday());
+            flight.setScheduleTuesday(request.isScheduleTuesday());
+            flight.setScheduleWednesday(request.isScheduleWednesday());
+            flight.setScheduleThursday(request.isScheduleThursday());
+            flight.setScheduleFriday(request.isScheduleFriday());
+            flight.setScheduleSaturday(request.isScheduleSaturday());
+            flight.setScheduleSunday(request.isScheduleSunday());
+            flight.setAirline(checkDataDBAirline.get());
+            flight.setFlightSchedules(flightSchedules(flight, 3));
             log.info("Flight Saved");
-            return templateResponse.success(flightRepository.save(flight));
+            flightRepository.save(flight);
+            return templateResponse.success("Flight Saved until 3 months from now");
         } catch (Exception e) {
             log.error("Error Saving Flight", e);
             throw e;
         }
+    }
+
+    public List<FlightSchedule> flightSchedules (Flight flight, int numberOfMonths) {
+        List<FlightSchedule> flightSchedules = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = currentDate.plusMonths(numberOfMonths);
+        List<SeatConfig> seatConfigs = flight.getAirplane().getSeatConfigs();
+        int dayInc = 0;
+        if (flight.getDepartureTime().isBefore(LocalTime.parse("23:59")) && flight.getArrivalTime().isAfter(LocalTime.parse("23:59"))) {
+            dayInc = 1;
+        }
+        for (DayOfWeek day : DayOfWeek.values()) {
+            if (flight.operatesOn(day)) {
+                LocalDate firstDate = currentDate.with(TemporalAdjusters.nextOrSame(day));
+                for (LocalDate date = firstDate; date.isBefore(endDate); date = date.plusWeeks(1)) {
+                    FlightSchedule flightSchedule = new FlightSchedule();
+                    flightSchedule.setFlight(flight);
+                    flightSchedule.setDepartureDate(date);
+                    flightSchedule.setArrivalDate(date.plusDays(dayInc));
+                    flightSchedule.setSeatAvailabilities(seatAvailabilities(seatConfigs, flightSchedule));
+                    flightSchedule.setFlightClasses(flightClasses(seatConfigs, flightSchedule));
+                    flightSchedules.add(flightSchedule);
+                }
+            }
+        }
+        return flightSchedules;
+    }
+
+    public List<FlightClass> flightClasses (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule) {
+        List<FlightClass> flightClasses = new ArrayList<>();
+        for (SeatConfig seatConfig : seatConfigs) {
+            flightClasses.add(flightClasses(flightSchedule, seatConfig));
+        }
+        return flightClasses;
+    }
+
+    public List<SeatAvailability> seatAvailabilities (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule){
+        List<SeatAvailability> seatAvailabilities = new ArrayList<>();
+        for (SeatConfig seatConfig : seatConfigs) {
+            char rowLetter = 'A';
+            for (int i = 0; i < seatConfig.getSeatRow(); i++) {
+                rowLetter = (char) (rowLetter + i);
+                for (int j = 1; j <= seatConfig.getSeatColumn(); j++) {
+                    SeatAvailability seatAvailability = new SeatAvailability();
+                    seatAvailability.setSeatConfig(seatConfig);
+                    seatAvailability.setSeatRow(String.valueOf(rowLetter));
+                    seatAvailability.setSeatColumn(String.valueOf(j));
+                    seatAvailability.setFlightSchedule(flightSchedule);
+                    seatAvailability.setSeatClass(seatConfig.getSeatClass());
+                    seatAvailabilities.add(seatAvailability);
+                }
+            }
+        }
+
+        return seatAvailabilities;
+    }
+
+    public FlightClass flightClasses (FlightSchedule flightSchedule, SeatConfig seatConfig) {
+        BigDecimal basePrice = flightSchedule.getFlight().getBasePrice();
+        BigDecimal multiplier = BigDecimal.valueOf(1);
+        if (seatConfig.getSeatClass().equals(SeatClass.BUSINESS)) {
+            multiplier = flightSchedule.getFlight().getAirplane().getAirline().getBusinessMultiplier();
+        }
+        FlightClass flightClass = new FlightClass();
+        flightClass.setFlightSchedule(flightSchedule);
+        flightClass.setSeatClass(seatConfig.getSeatClass());
+        flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
+        flightClass.setBasePriceChild(basePrice.multiply(multiplier).
+                multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountChild().
+                        multiply(BigDecimal.valueOf(0.01)))
+        );
+        flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
+                multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountInfant().
+                        multiply(BigDecimal.valueOf(0.01)))
+        );
+        flightClass.setAvailableSeat(seatConfig.getSeatRow() * seatConfig.getSeatColumn());
+        return flightClass;
     }
 
     @Transactional
@@ -98,14 +187,6 @@ public class FlightServiceImpl implements FlightService {
             Optional<Flight> checkDataDBFlight = flightRepository.findById(id);
             if (!checkDataDBFlight.isPresent()) throw new EntityExistsException("Flight with id " + id + " not found");
             int count = 0;
-            if (request.getDepartureDate() != null) {
-                checkDataDBFlight.get().setDepartureDate(request.getDepartureDate());
-                count++;
-            }
-            if (request.getArrivalDate() != null) {
-                checkDataDBFlight.get().setArrivalDate(request.getArrivalDate());
-                count++;
-            }
             if (request.getDepartureTime() != null) {
                 checkDataDBFlight.get().setDepartureTime(request.getDepartureTime());
                 count++;
@@ -142,13 +223,15 @@ public class FlightServiceImpl implements FlightService {
                 }
             }
             if (request.getBasePrice() != null) {
-                checkDataDBFlight.get().getFlightClasses().forEach(flightClass -> {
-                    flightClass.setBasePriceAdult(flightClass.getBasePriceAdult().
-                            divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
-                    flightClass.setBasePriceChild(flightClass.getBasePriceChild().
-                            divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
-                    flightClass.setBasePriceInfant(request.getBasePrice().
-                            divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
+                checkDataDBFlight.get().getFlightSchedules().forEach(flightSchedule -> {
+                    flightSchedule.getFlightClasses().forEach(flightClass -> {
+                        flightClass.setBasePriceAdult(flightClass.getBasePriceAdult().
+                                divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
+                        flightClass.setBasePriceChild(flightClass.getBasePriceChild().
+                                divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
+                        flightClass.setBasePriceInfant(request.getBasePrice().
+                                divide(checkDataDBFlight.get().getBasePrice(), 2,RoundingMode.HALF_UP).multiply(request.getBasePrice()));
+                    });
                 });
                 checkDataDBFlight.get().setBasePrice(request.getBasePrice());
                 count++;
@@ -179,7 +262,7 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     public Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
-                                      Long arrivalAirportId, Long airLineId, String departDate,
+                                      Long arrivalAirportId, Long airLineId, String departureDate,
                                       String departureTime, String arrivalTime, Integer numberOfPassengers,
                                       String seatClass) {
         try {
@@ -188,20 +271,21 @@ public class FlightServiceImpl implements FlightService {
             Specification<FlightClass> specification = ((root, query, criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<>();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                LocalDate depart = LocalDate.parse(departDate, formatter);
-                predicates.add(criteriaBuilder.equal(root.get("flight").get("departureDate"), depart));
-                predicates.add(criteriaBuilder.equal(root.get("flight").get("departureAirport").get("id"), departureAirportId));
-                predicates.add(criteriaBuilder.equal(root.get("flight").get("arrivalAirport").get("id"), arrivalAirportId));
+                LocalDate depart = LocalDate.parse(departureDate, formatter);
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("departureDate"), depart));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("departureAirport").get("id"), departureAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("arrivalAirport").get("id"), arrivalAirportId));
                 predicates.add(criteriaBuilder.equal(root.get("seatClass"), SeatClass.valueOf(seatClass)));
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("availableSeat"), numberOfPassengers));
                 if (airLineId != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("flight").get("airplane").get("airline").get("id"), airLineId));
+                    predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("airline").get("id"), airLineId));
                 }
                 if (departureTime != null && !departureTime.isEmpty() && arrivalTime != null && !arrivalTime.isEmpty()) {
                     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
                     LocalTime departureTimeFormat = LocalTime.parse(departureTime, timeFormatter);
                     LocalTime arrivalTimeFormat = LocalTime.parse(arrivalTime, timeFormatter);
-                    predicates.add(criteriaBuilder.between(root.get("flight").get("departureTime"), departureTimeFormat, arrivalTimeFormat));
+                    predicates.add(criteriaBuilder.between(root.get("flightSchedule").get("flight").
+                            get("departureTime"), departureTimeFormat, arrivalTimeFormat));
                 }
                 return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
             });
@@ -229,27 +313,27 @@ public class FlightServiceImpl implements FlightService {
         }
     }
 
-    private List<FlightClass> setFlightClass (Airplane airplane, Flight flight, BigDecimal basePrice) {
-        return airplane.getSeats().stream()
-                .map(seatClass -> {
-                    FlightClass flightClass = new FlightClass();
-                    flightClass.setFlight(flight);
-                    flightClass.setSeatClass(seatClass.getSeatClass());
-                    BigDecimal multiplier = BigDecimal.valueOf(1);
-                    if (seatClass.getSeatClass().equals(SeatClass.BUSINESS)) {
-                        multiplier = airplane.getAirline().getBusinessMultiplier();
-                    }
-                    flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
-                    flightClass.setBasePriceChild(basePrice.multiply(multiplier).
-                            multiply(airplane.getAirline().getDiscountChild().
-                                    multiply(BigDecimal.valueOf(0.01)))
-                    );
-                    flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
-                            multiply(airplane.getAirline().getDiscountInfant().
-                                    multiply(BigDecimal.valueOf(0.01)))
-                    );
-                    flightClass.setAvailableSeat(seatClass.getSeatRow() * seatClass.getSeatColumn());
-                    return flightClass;
-                }).collect(Collectors.toList());
-    }
+//    private List<FlightClass> setFlightClass (Airplane airplane, Flight flight, BigDecimal basePrice) {
+//        return airplane.getSeats().stream()
+//                .map(seatClass -> {
+//                    FlightClass flightClass = new FlightClass();
+//                    flightClass.setFlight(flight);
+//                    flightClass.setSeatClass(seatClass.getSeatClass());
+//                    BigDecimal multiplier = BigDecimal.valueOf(1);
+//                    if (seatClass.getSeatClass().equals(SeatClass.BUSINESS)) {
+//                        multiplier = airplane.getAirline().getBusinessMultiplier();
+//                    }
+//                    flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
+//                    flightClass.setBasePriceChild(basePrice.multiply(multiplier).
+//                            multiply(airplane.getAirline().getDiscountChild().
+//                                    multiply(BigDecimal.valueOf(0.01)))
+//                    );
+//                    flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
+//                            multiply(airplane.getAirline().getDiscountInfant().
+//                                    multiply(BigDecimal.valueOf(0.01)))
+//                    );
+//                    flightClass.setAvailableSeat(seatClass.getSeatRow() * seatClass.getSeatColumn());
+//                    return flightClass;
+//                }).collect(Collectors.toList());
+//    }
 }

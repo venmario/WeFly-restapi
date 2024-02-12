@@ -9,9 +9,9 @@ import java.io.Serializable;
 import java.util.List;
 
 @Data
-@Table(name = "airplane_seat")
+@Table(name = "seat_config")
 @Entity
-public class AirplaneSeat extends AbstractDate implements Serializable {
+public class SeatConfig extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +23,7 @@ public class AirplaneSeat extends AbstractDate implements Serializable {
     private int seatRow;
     private int seatColumn;
     @JsonBackReference
-    @OneToMany(mappedBy = "airplaneSeat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "seatConfig", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<SeatAvailability> seatAvailabilities;
+
 }

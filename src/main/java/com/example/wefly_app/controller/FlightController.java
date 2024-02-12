@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,16 +21,19 @@ public class FlightController {
     @Autowired
     public FlightService flightService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = {"/save", "/save/"})
     public ResponseEntity<Map> save(@Valid @RequestBody FlightRegisterModel request) {
         return new ResponseEntity<>(flightService.save(request), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<Map> update(@Valid @RequestBody FlightUpdateModel request, @PathVariable(value = "id") Long id) {
         return new ResponseEntity<>(flightService.update(request, id), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Map> delete(@Valid @RequestBody FlightDeleteModel request, @PathVariable(value = "id") Long id) {
         return new ResponseEntity<>(flightService.delete(request, id), HttpStatus.OK);

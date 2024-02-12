@@ -1,5 +1,6 @@
 package com.example.wefly_app.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.Getter;
@@ -18,14 +19,14 @@ public class Airplane extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
+    @Column(unique = true)
+    private String code;
     private String type;
     @ManyToOne
     @JoinColumn(name = "airline_id")
     private Airline airline;
-    @JsonManagedReference
+    @JsonBackReference
     @OneToMany(mappedBy = "airplane", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<AirplaneSeat> seats;
+    private List<SeatConfig> seatConfigs;
 
 }

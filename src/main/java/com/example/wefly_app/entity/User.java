@@ -56,6 +56,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
     @Column(length = 100, nullable = true)
     private String otp;
 
+    @JsonIgnore
     private Date otpExpiredDate;
 
     @Setter
@@ -86,7 +87,7 @@ public class User extends AbstractDate implements UserDetails, Serializable {
                     @JoinColumn(name = "role_id")
             }
     )
-    private List<Role> roles = new ArrayList<>();
+    private List<Role> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

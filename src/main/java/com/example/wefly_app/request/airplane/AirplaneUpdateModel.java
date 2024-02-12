@@ -6,8 +6,8 @@ import javax.validation.constraints.NotEmpty;
 
 @Data
 public class AirplaneUpdateModel {
-    @NotEmpty(message = "name is required")
-    private String name;
+    @NotEmpty(message = "code is required")
+    private String code;
     @NotEmpty(message = "type is required")
     private String type;
 }

@@ -3,6 +3,7 @@ package com.example.wefly_app.request.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
@@ -14,4 +15,5 @@ public class UpdateUserModel {
     private LocalDate dateOfBirth;
     @Pattern(regexp = "^\\d+$", message = "Phone number must contain only numbers")
     private String phoneNumber;
+    private String gender;
 }

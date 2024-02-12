@@ -12,7 +12,7 @@ public interface FlightService {
     Map<Object, Object> delete(FlightDeleteModel request, Long id);
 
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType, Long departureAirportId,
-                               Long arrivalAirportId, Long airLineId, String departDate,
+                               Long arrivalAirportId, Long airLineId, String departureDate,
                                String departureTime, String arrivalTime, Integer numberOfPassengers,
                                String seatClass);
     Map<Object, Object> getById(Long id);

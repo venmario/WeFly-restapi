@@ -39,47 +39,31 @@ public class AirplaneServiceImpl implements AirplaneService {
     public Map<Object, Object> save(AirplaneRegisterModel request) {
         try {
             log.info("Save New Airplane");
-            if (airplaneRepository.getSimilarName(request.getName()) > 0){
-                throw new EntityExistsException("Airplane with name " + request.getName() + " already exists");
+            if (airplaneRepository.getSimilarCode(request.getCode()) > 0) {
+                throw new EntityExistsException("Airplane with code " + request.getCode() + " already exist");
             }
             Airline checkDataDBAirline = airlineRepository.findById(request.getAirlineId())
                     .orElseThrow(() -> new EntityNotFoundException("Airline with id " + request.getAirlineId() + " not found"));
             Airplane airplane = new Airplane();
-            airplane.setName(request.getName());
             airplane.setType(request.getType());
             airplane.setAirline(checkDataDBAirline);
-            List<AirplaneSeat> seats = request.getSeats().stream()
+            airplane.setCode(request.getCode());
+            List<SeatConfig> seatConfigs = request.getSeats().stream()
                             .map(seat -> {
-                                AirplaneSeat airplaneSeat = new AirplaneSeat();
+                                SeatConfig airplaneSeat = new SeatConfig();
                                 airplaneSeat.setSeatClass(SeatClass.valueOf(seat.getSeatClass()));
                                 airplaneSeat.setSeatRow(seat.getNumberOfRow());
                                 airplaneSeat.setSeatColumn(seat.getNumberOfColumn());
                                 airplaneSeat.setAirplane(airplane);
-                                airplaneSeat.setSeatAvailabilities(setSeatAvailabilities(airplaneSeat));
                                 return airplaneSeat;
                             }).collect(Collectors.toList());
-            airplane.setSeats(seats);
+            airplane.setSeatConfigs(seatConfigs);
             log.info("Airplane Saved");
             return templateResponse.success(airplaneRepository.save(airplane));
         } catch (Exception e) {
             log.error("Error Saving Airplane", e);
             throw e;
         }
-    }
-
-    private List<SeatAvailability> setSeatAvailabilities(AirplaneSeat airplaneSeat){
-        List<SeatAvailability> seatAvailabilities = new ArrayList<>();
-        for (int i = 0; i < airplaneSeat.getSeatRow(); i++) {
-            char rowLetter = (char) ('A' + i);
-            for (int j = 1; j <= airplaneSeat.getSeatColumn(); j++) {
-                SeatAvailability seatAvailability = new SeatAvailability();
-                seatAvailability.setAirplaneSeat(airplaneSeat);
-                seatAvailability.setSeatNumber(j + "" + rowLetter);
-                seatAvailability.setAirplaneSeat(airplaneSeat);
-                seatAvailabilities.add(seatAvailability);
-            }
-        }
-        return seatAvailabilities;
     }
 
     @Override
@@ -90,8 +74,8 @@ public class AirplaneServiceImpl implements AirplaneService {
             if (!checkDataDBAirplane.isPresent()) throw new EntityExistsException("Airplane with id " + id + " not found");
             int count = 0;
             Airplane airplane = checkDataDBAirplane.get();
-            if (request.getName() != null && !request.getName().isEmpty()) {
-                airplane.setName(request.getName());
+            if (request.getCode() != null && !request.getCode().isEmpty()) {
+                airplane.setCode(request.getCode());
                 count++;
             }
             if (request.getType() != null && !request.getType().isEmpty()) {

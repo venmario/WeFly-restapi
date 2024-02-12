@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Example Airlines",
+    "code": "EA",
+    "discountChild": 10.00,
+    "discountInfant": 90.00,
+    "businessMultiplier": 4
+  },
+  {
+    "name": "Global Airways",
+    "code": "GA",
+    "discountChild": 20.00,
+    "discountInfant": 85.00,
+    "businessMultiplier": 3
+  },
+  {
+    "name": "National Air",
+    "code": "NA",
+    "discountChild": 15.00,
+    "discountInfant": 90.00,
+    "businessMultiplier": 2
+  },
+  {
+    "name": "Skyline Flights",
+    "code": "SF",
+    "discountChild": 10.00,
+    "discountInfant": 80.00,
+    "businessMultiplier": 3.5
+  },
+  {
+    "name": "TransWorld Aviation",
+    "code": "TWA",
+    "discountChild": 30.00,
+    "discountInfant": 90.00,
+    "businessMultiplier": 4.5
+  }
+]
