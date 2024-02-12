@@ -19,7 +19,7 @@ import java.util.List;
 public class Transaction extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_seq")
-    @SequenceGenerator(name = "entity_seq", sequenceName = "ENTITY_SEQ", initialValue = 7, allocationSize = 1)
+    @SequenceGenerator(name = "entity_seq", sequenceName = "ENTITY_SEQ", initialValue = 300, allocationSize = 1)
     private Long id;
 
     private SeatClass seatClass;

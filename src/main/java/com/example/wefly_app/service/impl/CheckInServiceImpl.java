@@ -14,6 +14,7 @@ import com.example.wefly_app.util.FileStorageProperties;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
 import com.example.wefly_app.util.exception.FileStorageException;
+import com.example.wefly_app.util.exception.ValidationException;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
@@ -51,10 +52,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -65,7 +64,7 @@ public class CheckInServiceImpl implements CheckinService {
     private final TemplateResponse templateResponse;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
-    private final Path fileStorageLocation;
+    private final Map<String, Path> fileStorageLocation = new HashMap<>();
     private final BoardingPassRepository boardingPassRepository;
 
     public CheckInServiceImpl(SimpleStringUtils simpleStringUtils, ETicketRepository eticketRepository,
@@ -78,10 +77,13 @@ public class CheckInServiceImpl implements CheckinService {
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
         this.boardingPassRepository = boardingPassRepository;
-        this.fileStorageLocation = Paths.get(fileStorageProperties.getETicketDir())
-                .toAbsolutePath().normalize();
+        Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
+        Path boardingPass = Paths.get(fileStorageProperties.getBoardingPassDir()).toAbsolutePath().normalize();
+        this.fileStorageLocation.put("eticket", eticket);
+        this.fileStorageLocation.put("boardingPass", boardingPass);
         try {
-            Files.createDirectories(this.fileStorageLocation);
+            Files.createDirectories(eticket);
+            Files.createDirectories(boardingPass);
         } catch (Exception e) {
             throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", e);
         }
@@ -109,23 +111,23 @@ public class CheckInServiceImpl implements CheckinService {
     public Resource getETicket(Long transactionId) {
         log.info("Get ETicket");
         try {
-//            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-//            Long userId = (Long) attributes.getRequest().getAttribute("userId");
-//            Optional<User> checkDBUser = userRepository.findById(userId);
-//            if (!checkDBUser.isPresent()) {
-//                log.info("User Not Found");
-//                throw new EntityNotFoundException("User Not Found");
-//            }
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attributes.getRequest().getAttribute("userId");
+            Optional<User> checkDBUser = userRepository.findById(userId);
+            if (!checkDBUser.isPresent()) {
+                log.info("User Not Found");
+                throw new EntityNotFoundException("User Not Found");
+            }
             Optional<Transaction> checkDBTransaction = transactionRepository.findById(transactionId);
             if (!checkDBTransaction.isPresent()) {
                 log.info("Unauthorized Access");
                 throw new EntityNotFoundException("Transaction Not Found");
             }
-            Path filePath = this.fileStorageLocation.resolve(checkDBTransaction.get().getEticketFile()).normalize();
+            Path filePath = this.fileStorageLocation.get("eticket").resolve(checkDBTransaction.get().getEticketFile()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) {
                 log.info("File Not Found");
-                throw new EntityNotFoundException("File Not Found " + filePath);
+                throw new FileNotFoundException("File Not Found " + filePath);
             } else {
                 log.info("ETicket Found");
                 return resource;
@@ -133,7 +135,48 @@ public class CheckInServiceImpl implements CheckinService {
         } catch (MalformedURLException e) {
             log.error("get ETicket Error: " + e.getMessage());
             throw new FileStorageException("File Not Found ", e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Resource getBoardingPass(Long eticketId) {
+        log.info("Get Boarding Pass");
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attributes.getRequest().getAttribute("userId");
+            Optional<User> checkDBUser = userRepository.findById(userId);
+            if (!checkDBUser.isPresent()) {
+                log.info("User Not Found");
+                throw new EntityNotFoundException("User Not Found");
+            }
+            Optional<ETicket> checkDBETicket = eticketRepository.findById(eticketId);
+            if (!checkDBETicket.isPresent()) {
+                log.info("Boarding Pass not found");
+                throw new EntityNotFoundException("Boarding Pass not found");
+            }
+            if (checkDBETicket.get().getTransaction().getUser().getId() != userId){
+                log.info("Unauthorized");
+                throw new ValidationException("Unauthorized");
+            }
+            Path filePath = this.fileStorageLocation.get("boardingPass").resolve(checkDBETicket.get().getBoardingPassFile())
+                    .normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()){
+                log.info("File not found");
+                throw new FileNotFoundException("Boarding pass file not found " + filePath);
+            } else {
+                log.info("Boarding Pass Found");
+                return resource;
+            }
+        } catch (MalformedURLException e) {
+            log.error("get boarding pass error: " + e.getMessage());
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
@@ -302,7 +345,8 @@ public class CheckInServiceImpl implements CheckinService {
             if (!request.getOrdererLastName().equals(eticket.getTransaction().getOrderer().getLastName())){
                 throw new EntityNotFoundException("Orderer Not Found");
             } else {
-                saveBoardingPassEntity(eticket);
+                eticket = saveBoardingPassEntity(eticket);
+                eticketRepository.save(eticket);
                 return templateResponse.success("Check In Success, check your email for boarding pass");
             }
         } catch (Exception e) {
@@ -312,18 +356,19 @@ public class CheckInServiceImpl implements CheckinService {
     }
 
     @Transactional
-    public void saveBoardingPassEntity(ETicket request) throws FileNotFoundException {
+    public ETicket saveBoardingPassEntity(ETicket request) throws FileNotFoundException {
         log.info("Save Boarding Pass");
         List<Passenger> passengers = request.getTransaction().getPassengers();
         List<SeatAvailability> listAvailableSeat = boardingPassRepository
                 .findAvailableSeats(request.getTransactionDetail().getFlightClass().getId());
         BoardingPassDTO boardingPassDTO = boardingPassRepository
                 .findFlightDetailsByTransactionDetailId(request.getTransactionDetail().getId());
-        String path = "boarding-pass/boardingPass.pdf";
+        String fileName = "boarding-pass-" + request.getId() + ".pdf";
+        String path = "boarding-pass/" + fileName;
         PdfWriter writer = new PdfWriter(path);
         PdfDocument pdf = new PdfDocument(writer);
         try (Document document = new Document(pdf, PageSize.A6)) {
-            AtomicInteger count = new AtomicInteger(1);
+            AtomicInteger count = new AtomicInteger(0);
             passengers.forEach(passenger -> {
                 if (count.get() > 0) document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
                 BoardingPass boardingPass = new BoardingPass();
@@ -340,6 +385,8 @@ public class CheckInServiceImpl implements CheckinService {
             log.error("Save Boarding Pass Error");
             throw e;
         }
+        request.setBoardingPassFile(fileName);
+        return request;
     }
 
     public void generateBoardingPass(Document document, BoardingPassDTO boardingPassDTO, BoardingPass boardingPass) {

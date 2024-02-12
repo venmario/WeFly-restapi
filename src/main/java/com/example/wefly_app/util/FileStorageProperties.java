@@ -12,4 +12,6 @@ public class FileStorageProperties {
     private String invoiceDir;
     @Value("${app.file.e-ticket}")
     private String eTicketDir;
+    @Value("${app.file.boarding-pass}")
+    private String boardingPassDir;
 }

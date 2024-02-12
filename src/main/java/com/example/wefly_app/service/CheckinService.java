@@ -10,5 +10,6 @@ public interface CheckinService {
     void save(Transaction request);
     void generateETicket(Transaction request);
     Resource getETicket(Long transactionId);
+    Resource getBoardingPass (Long eticketId);
     Map<Object, Object> checkIn(CheckinRequestModel request);
 }

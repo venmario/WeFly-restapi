@@ -1,7 +1,6 @@
 package com.example.wefly_app.controller;
 
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
-import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.CheckinService;
 import com.example.wefly_app.service.TransactionService;
@@ -15,13 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -89,7 +85,7 @@ public class TransactionController {
         }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
 

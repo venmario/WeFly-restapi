@@ -20,4 +20,5 @@ public class ETicket implements Serializable {
     @OneToOne
     @JoinColumn(name = "transaction_detail_id")
     private TransactionDetail transactionDetail;
+    private String boardingPassFile;
 }
