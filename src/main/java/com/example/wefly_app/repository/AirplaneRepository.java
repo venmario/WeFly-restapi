@@ -7,11 +7,15 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 public interface AirplaneRepository extends PagingAndSortingRepository<Airplane, Long>, JpaSpecificationExecutor<Airplane> {
-    @Query("FROM Airplane a WHERE a.name = :name")
-    Airplane checkExistingName(String name);
+    @Query("FROM Airplane a WHERE a.code = :code")
+    Airplane checkExistingName(String code);
 
-    @Query(value = "select count(a) from Airplane a WHERE a.name = :name")
-    Long getSimilarName (@Param("name") String name);
+    @Query(value = "select count(a) from Airplane a WHERE a.code = :code")
+    Long getSimilarCode (@Param("code") String code);
+
+    @Query(value = "select count(a) from Airplane a WHERE a.airline.id = :airlineId")
+    Long countByAirlineId(@Param("airlineId") Long airlineId);
+
 
     @Query("FROM Airplane a WHERE a.id = :id")
     Airplane checkExistingId(Long id);

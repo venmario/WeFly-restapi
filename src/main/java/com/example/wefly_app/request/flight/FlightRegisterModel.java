@@ -12,20 +12,14 @@ import java.time.LocalTime;
 
 @Data
 public class FlightRegisterModel {
-//    @NotEmpty(message = "flight code is required")
-//    private String flightCode;
     @NotNull(message = "departure airport is required")
     private Long departureAirportId;
     @NotNull(message = "arrival airport is required")
     private Long arrivalAirportId;
     @NotNull(message = "airplane is required")
     private Long airplaneId;
-    @NotNull(message = "departure date is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate departureDate;
-    @NotNull(message = "arrival date is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate arrivalDate;
+    @NotNull(message = "airline is required")
+    private Long airlineId;
     @NotNull(message = "departure time is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
@@ -35,5 +29,13 @@ public class FlightRegisterModel {
     @NotNull(message = "base price is required")
     @Column(precision = 14, scale = 2)
     private BigDecimal basePrice;
+
+    private boolean scheduleMonday = false;
+    private boolean scheduleTuesday = false;
+    private boolean scheduleWednesday = false;
+    private boolean scheduleThursday = false;
+    private boolean scheduleFriday = false;
+    private boolean scheduleSaturday = false;
+    private boolean scheduleSunday = false;
 
 }

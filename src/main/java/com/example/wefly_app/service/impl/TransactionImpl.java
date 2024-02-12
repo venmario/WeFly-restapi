@@ -6,6 +6,7 @@ import com.example.wefly_app.request.transaction.InvoiceDTO;
 import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
+import com.example.wefly_app.service.CheckinService;
 import com.example.wefly_app.service.TransactionService;
 import com.example.wefly_app.util.FileStorageProperties;
 import com.example.wefly_app.util.SimpleStringUtils;
@@ -57,7 +58,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -71,15 +71,14 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class TransactionImpl implements TransactionService {
-    private final String invoiceBasePath;
     private final Path fileStorageLocation;
 //    @Autowired
 //    public TransactionImpl (FileStorageProperties fileStorageProperties) {
@@ -99,6 +98,8 @@ public class TransactionImpl implements TransactionService {
     public final SimpleStringUtils simpleStringUtils;
     public final BankRepository bankRepository;
     public final PaymentRepository paymentRepository;
+    private final ETicketRepository eticketRepository;
+    private final CheckinService checkinService;
 
 
     @Autowired
@@ -106,7 +107,8 @@ public class TransactionImpl implements TransactionService {
                             TransactionRepository transactionRepository, UserRepository userRepository,
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
                             SimpleStringUtils simpleStringUtils, BankRepository bankRepository, PaymentRepository paymentRepository,
-                            @Value("${app.upload.payment.invoice}") String invoiceBasePath, FileStorageProperties fileStorageProperties) {
+                            FileStorageProperties fileStorageProperties, ETicketRepository eticketRepository,
+                            CheckinService checkinService) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -115,7 +117,8 @@ public class TransactionImpl implements TransactionService {
         this.simpleStringUtils = simpleStringUtils;
         this.bankRepository = bankRepository;
         this.paymentRepository = paymentRepository;
-        this.invoiceBasePath = invoiceBasePath;
+        this.eticketRepository = eticketRepository;
+        this.checkinService = checkinService;
         this.fileStorageLocation = Paths.get(fileStorageProperties.getInvoiceDir())
                 .toAbsolutePath().normalize();
         try {
@@ -186,6 +189,8 @@ public class TransactionImpl implements TransactionService {
                                 passenger1.setFirstName(passenger.getFirstName());
                                 passenger1.setLastName(passenger.getLastName());
                                 passenger1.setDateOfBirth(passenger.getDateOfBirth());
+                                passenger1.setNationality(passenger.getNationality());
+                                passenger1.setPassengerType(passenger.getPassengerType());
                                 passenger1.setTransaction(transaction);
                                 return passenger1;
                             })
@@ -310,6 +315,8 @@ public class TransactionImpl implements TransactionService {
             if (request.getTransactionStatus().matches("settlement|capture")) {
                 payment.setTransactionStatus("PAID");
                 payment = generateInvoice(payment);
+                checkinService.save(payment.getTransaction());
+                checkinService.generateETicket(payment.getTransaction());
             } else {
                 payment.setTransactionStatus(request.getTransactionStatus());
             }
@@ -588,7 +595,7 @@ public class TransactionImpl implements TransactionService {
             decimalFormat.setDecimalFormatSymbols(symbols);
 
             Hibernate.initialize(invoiceDTO.getTransactionDetails());
-            Flight flight = invoiceDTO.getTransactionDetails().get(0).getFlightClass().getFlight();
+            Flight flight = invoiceDTO.getTransactionDetails().get(0).getFlightClass().getFlightSchedule().getFlight();
             Airline airline = flight.getAirplane().getAirline();
             String departureAirport = flight.getDepartureAirport().getIata();
             String arrivalAirport = flight.getArrivalAirport().getIata();
@@ -666,26 +673,26 @@ public class TransactionImpl implements TransactionService {
     }
 
 
-    @Override
-    public Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType) {
-        try {
-            log.info("get all bank");
-            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
-            Specification<Bank> specification = ((root, criteriaQuery, criteriaBuilder) -> {
-                List<Predicate> predicates = new ArrayList<>();
-                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-            });
-            Page<Bank> list = bankRepository.findAll(specification, pageable);
-            Map<Object, Object> map = new HashMap<>();
-            map.put("data", list);
-            log.info("get all bank succeed");
-            return map;
-
-        } catch (Exception e) {
-            log.error("get all bank error ", e);
-            throw e;
-        }
-    }
+//    @Override
+//    public Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType) {
+//        try {
+//            log.info("get all bank");
+//            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
+//            Specification<Bank> specification = ((root, criteriaQuery, criteriaBuilder) -> {
+//                List<Predicate> predicates = new ArrayList<>();
+//                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+//            });
+//            Page<Bank> list = bankRepository.findAll(specification, pageable);
+//            Map<Object, Object> map = new HashMap<>();
+//            map.put("data", list);
+//            log.info("get all bank succeed");
+//            return map;
+//
+//        } catch (Exception e) {
+//            log.error("get all bank error ", e);
+//            throw e;
+//        }
+//    }
 
 //    @Override
 //    public Map<Object, Object> savePayment(PaymentRegisterModel request) {

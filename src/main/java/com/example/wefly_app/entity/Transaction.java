@@ -1,6 +1,7 @@
 package com.example.wefly_app.entity;
 
 import com.example.wefly_app.entity.enums.SeatClass;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.Where;
@@ -17,8 +18,10 @@ import java.util.List;
 @Where(clause = "deleted_date is null")
 public class Transaction extends AbstractDate implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_seq")
+    @SequenceGenerator(name = "entity_seq", sequenceName = "ENTITY_SEQ", initialValue = 7, allocationSize = 1)
     private Long id;
+
     private SeatClass seatClass;
 
 //  @JsonBackReference
@@ -44,10 +47,14 @@ public class Transaction extends AbstractDate implements Serializable {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
+    @JsonBackReference
+    @OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ETicket> etickets;
+
     private int adultPassenger;
     private int childPassenger;
     private int infantPassenger;
     @Column(name = "total_price", precision = 13)
     private BigDecimal totalPrice;
-    private String paymentProof;
+    private String eticketFile;
 }

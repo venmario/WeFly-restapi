@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
             User search;
             String otp;
             do {
-                otp = SimpleStringUtils.randomString(6, true);
+                otp = simpleStringUtils.randomString(6, true);
                 search = userRepository.findOneByOTP(otp); // need to be fixed later for performance purpose
             } while (search != null);
             Date dateNow = new Date();
@@ -270,7 +270,7 @@ public class UserServiceImpl implements UserService {
             User search;
             String otp;
             do {
-                otp = SimpleStringUtils.randomString(4, true);
+                otp = simpleStringUtils.randomString(4, true);
                 search = userRepository.findOneByOTP(otp);
             } while (search != null);
             Date dateNow = new Date();

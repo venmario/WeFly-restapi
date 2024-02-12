@@ -17,10 +17,6 @@ public class FlightUpdateModel {
     private Long departureAirportId;
     private Long arrivalAirportId;
     private Long airplaneId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate departureDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate arrivalDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")

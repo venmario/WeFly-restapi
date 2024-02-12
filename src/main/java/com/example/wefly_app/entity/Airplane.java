@@ -19,14 +19,14 @@ public class Airplane extends AbstractDate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
+    @Column(unique = true)
+    private String code;
     private String type;
     @ManyToOne
     @JoinColumn(name = "airline_id")
     private Airline airline;
     @JsonBackReference
     @OneToMany(mappedBy = "airplane", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<AirplaneSeat> seats;
+    private List<SeatConfig> seatConfigs;
 
 }

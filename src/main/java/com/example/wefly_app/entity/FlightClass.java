@@ -26,6 +26,10 @@ public class FlightClass implements Serializable {
     private Integer availableSeat;
     @JsonManagedReference
     @ManyToOne
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
+    @JoinColumn(name = "flight_schedule_id")
+    private FlightSchedule flightSchedule;
+//    @JsonManagedReference
+//    @ManyToOne
+//    @JoinColumn(name = "flight_id")
+//    private Flight flight;
 }

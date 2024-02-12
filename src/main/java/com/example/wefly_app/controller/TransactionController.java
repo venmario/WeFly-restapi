@@ -3,6 +3,7 @@ package com.example.wefly_app.controller;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
+import com.example.wefly_app.service.CheckinService;
 import com.example.wefly_app.service.TransactionService;
 import com.example.wefly_app.service.impl.ReportServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class TransactionController {
     public TransactionService transactionService;
     @Autowired
     public ReportServiceImpl reportService;
+    @Autowired
+    public CheckinService checkinService;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping(value = {"/save", "/save/"})
@@ -87,6 +90,25 @@ public class TransactionController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+//    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping(value = {"/getETicket/{transactionId}", "/getETicket/{transactionId}/"})
+    public ResponseEntity<Resource> getETicket(@PathVariable("transactionId") Long transactionId, HttpServletRequest request) {
+        Resource resource = checkinService.getETicket(transactionId);
+        String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
 
