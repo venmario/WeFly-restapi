@@ -14,20 +14,15 @@ public class SeatAvailability implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String seatColumn;
-    private String seatRow;
-    private boolean available = true;
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "seat_config_id")
-    private SeatConfig seatConfig;
+    @JoinColumn(name = "seat_configuration_id")
+    private SeatConfiguration seatConfiguration;
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "flight_schedule_id")
-    private FlightSchedule flightSchedule;
+    @JoinColumn(name = "flight_class_id")
+    private FlightClass flightClass;
     @JsonBackReference
-    @OneToOne
-    @JoinColumn(name = "boarding_pass_id")
+    @OneToOne(mappedBy = "seatAvailability", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private BoardingPass boardingPass;
-    private SeatClass seatClass;
 }

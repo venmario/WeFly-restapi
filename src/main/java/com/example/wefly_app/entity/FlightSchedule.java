@@ -27,9 +27,6 @@ public class FlightSchedule {
     @JsonBackReference
     @OneToMany(mappedBy = "flightSchedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<FlightClass> flightClasses;
-    @JsonBackReference
-    @OneToMany(mappedBy = "flightSchedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<SeatAvailability> seatAvailabilities;
 //    @JsonBackReference
 //    @OneToMany(mappedBy = "flightSchedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 //    private List<SeatAvailability> seatAvailabilities;

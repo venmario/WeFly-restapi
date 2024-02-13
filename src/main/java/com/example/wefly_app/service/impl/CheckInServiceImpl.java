@@ -359,8 +359,8 @@ public class CheckInServiceImpl implements CheckinService {
     public ETicket saveBoardingPassEntity(ETicket request) throws FileNotFoundException {
         log.info("Save Boarding Pass");
         List<Passenger> passengers = request.getTransaction().getPassengers();
-        List<SeatAvailability> listAvailableSeat = boardingPassRepository
-                .findAvailableSeats(request.getTransactionDetail().getFlightClass().getId());
+//        List<SeatAvailability> listAvailableSeat = boardingPassRepository
+//                .findAvailableSeats(request.getTransactionDetail().getFlightClass().getId());
         BoardingPassDTO boardingPassDTO = boardingPassRepository
                 .findFlightDetailsByTransactionDetailId(request.getTransactionDetail().getId());
         String fileName = "boarding-pass-" + request.getId() + ".pdf";
@@ -372,11 +372,11 @@ public class CheckInServiceImpl implements CheckinService {
             passengers.forEach(passenger -> {
                 if (count.get() > 0) document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
                 BoardingPass boardingPass = new BoardingPass();
-                SeatAvailability seatAvailability = listAvailableSeat.get(count.get());
-                seatAvailability.setAvailable(false);
+//                SeatAvailability seatAvailability = listAvailableSeat.get(count.get());
+//                seatAvailability.setAvailable(false);
                 boardingPass.setPassenger(passenger);
                 boardingPass.setETicket(request);
-                boardingPass.setSeatAvailability(seatAvailability);
+//                boardingPass.setSeatAvailability(seatAvailability);
                 generateBoardingPass(document, boardingPassDTO, boardingPass);
                 boardingPassRepository.save(boardingPass);
                 count.getAndIncrement();
@@ -417,8 +417,8 @@ public class CheckInServiceImpl implements CheckinService {
             Passenger passenger = boardingPass.getPassenger();
             String fullName = passenger.getFirstName() + " " + passenger.getLastName();
             LocalTime boardingTime = boardingPassDTO.getDepartureTime().minusMinutes(30);
-            String seatAssignment = boardingPass.getSeatAvailability().getSeatColumn()
-                    + boardingPass.getSeatAvailability().getSeatRow();
+//            String seatAssignment = boardingPass.getSeatAvailability().getSeatColumn()
+//                    + boardingPass.getSeatAvailability().getSeatRow();
 
             Text passengerName = new Text(fullName).setFont(boldFont).setFontSize(16);
             Text passengerType = new Text(" " + passenger.getPassengerType()).setFont(italicFont).setFontSize(10);
@@ -448,10 +448,10 @@ public class CheckInServiceImpl implements CheckinService {
                             .add(new Text("\n" + boardingPassDTO.getArrivalTime()).setFont(regularFont).setFontSize(12).setFontColor(greyColor)))
                     .setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
 
-            detailTicket.addCell(new Cell().add(new Paragraph()
-                            .add(new Text("SEAT ASSIGNMENT").setFont(boldFont).setFontSize(8))
-                            .add(new Text("\n" + seatAssignment).setFont(regularFont).setFontSize(12).setFontColor(greyColor)))
-                    .setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER));
+//            detailTicket.addCell(new Cell().add(new Paragraph()
+//                            .add(new Text("SEAT ASSIGNMENT").setFont(boldFont).setFontSize(8))
+//                            .add(new Text("\n" + seatAssignment).setFont(regularFont).setFontSize(12).setFontColor(greyColor)))
+//                    .setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER));
             detailTicket.addCell(new Cell().add(new Paragraph(" ")).setBorder(Border.NO_BORDER));
             detailTicket.addCell(new Cell().add(new Paragraph()
                             .add(new Text("TERMINAL/GATE").setFont(boldFont).setFontSize(8))

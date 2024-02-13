@@ -21,7 +21,8 @@ public class BoardingPass implements Serializable {
     @JoinColumn(name = "passenger_id")
     private Passenger passenger;
     @JsonManagedReference
-    @OneToOne(mappedBy = "boardingPass", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne
+    @JoinColumn(name = "seat_availability_id")
     private SeatAvailability seatAvailability;
 
 }

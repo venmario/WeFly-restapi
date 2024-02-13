@@ -106,7 +106,7 @@ public class FlightServiceImpl implements FlightService {
         List<FlightSchedule> flightSchedules = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
         LocalDate endDate = currentDate.plusMonths(numberOfMonths);
-        List<SeatConfig> seatConfigs = flight.getAirplane().getSeatConfigs();
+        List<AirplaneSeatClass> airplaneSeatClasses = flight.getAirplane().getAirplaneSeatClasses();
         int dayInc = 0;
         if (flight.getDepartureTime().isBefore(LocalTime.parse("23:59")) && flight.getArrivalTime().isAfter(LocalTime.parse("23:59"))) {
             dayInc = 1;
@@ -119,8 +119,7 @@ public class FlightServiceImpl implements FlightService {
                     flightSchedule.setFlight(flight);
                     flightSchedule.setDepartureDate(date);
                     flightSchedule.setArrivalDate(date.plusDays(dayInc));
-                    flightSchedule.setSeatAvailabilities(seatAvailabilities(seatConfigs, flightSchedule));
-                    flightSchedule.setFlightClasses(flightClasses(seatConfigs, flightSchedule));
+                    flightSchedule.setFlightClasses(flightClasses(flightSchedule, airplaneSeatClasses));
                     flightSchedules.add(flightSchedule);
                 }
             }
@@ -128,55 +127,60 @@ public class FlightServiceImpl implements FlightService {
         return flightSchedules;
     }
 
-    public List<FlightClass> flightClasses (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule) {
-        List<FlightClass> flightClasses = new ArrayList<>();
-        for (SeatConfig seatConfig : seatConfigs) {
-            flightClasses.add(flightClasses(flightSchedule, seatConfig));
-        }
-        return flightClasses;
-    }
+//    public List<FlightClass> flightClasses (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule) {
+//        List<FlightClass> flightClasses = new ArrayList<>();
+//        for (SeatConfig seatConfig : seatConfigs) {
+//            flightClasses.add(flightClasses(flightSchedule, seatConfig));
+//        }
+//        return flightClasses;
+//    }
+//
+//    public List<SeatAvailability> seatAvailabilities (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule){
+//        List<SeatAvailability> seatAvailabilities = new ArrayList<>();
+//        for (SeatConfig seatConfig : seatConfigs) {
+//            char rowLetter = 'A';
+//            for (int i = 0; i < seatConfig.getSeatRow(); i++) {
+//                rowLetter = (char) (rowLetter + i);
+//                for (int j = 1; j <= seatConfig.getSeatColumn(); j++) {
+//                    SeatAvailability seatAvailability = new SeatAvailability();
+//                    seatAvailability.setSeatConfig(seatConfig);
+//                    seatAvailability.setSeatRow(String.valueOf(rowLetter));
+//                    seatAvailability.setSeatColumn(String.valueOf(j));
+//                    seatAvailability.setFlightSchedule(flightSchedule);
+//                    seatAvailability.setSeatClass(seatConfig.getSeatClass());
+//                    seatAvailabilities.add(seatAvailability);
+//                }
+//            }
+//        }
+//
+//        return seatAvailabilities;
+//    }
 
-    public List<SeatAvailability> seatAvailabilities (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule){
-        List<SeatAvailability> seatAvailabilities = new ArrayList<>();
-        for (SeatConfig seatConfig : seatConfigs) {
-            char rowLetter = 'A';
-            for (int i = 0; i < seatConfig.getSeatRow(); i++) {
-                rowLetter = (char) (rowLetter + i);
-                for (int j = 1; j <= seatConfig.getSeatColumn(); j++) {
-                    SeatAvailability seatAvailability = new SeatAvailability();
-                    seatAvailability.setSeatConfig(seatConfig);
-                    seatAvailability.setSeatRow(String.valueOf(rowLetter));
-                    seatAvailability.setSeatColumn(String.valueOf(j));
-                    seatAvailability.setFlightSchedule(flightSchedule);
-                    seatAvailability.setSeatClass(seatConfig.getSeatClass());
-                    seatAvailabilities.add(seatAvailability);
-                }
-            }
-        }
-
-        return seatAvailabilities;
-    }
-
-    public FlightClass flightClasses (FlightSchedule flightSchedule, SeatConfig seatConfig) {
+    public List<FlightClass> flightClasses (FlightSchedule flightSchedule, List<AirplaneSeatClass> airplaneSeatClasses) {
         BigDecimal basePrice = flightSchedule.getFlight().getBasePrice();
-        BigDecimal multiplier = BigDecimal.valueOf(1);
-        if (seatConfig.getSeatClass().equals(SeatClass.BUSINESS)) {
-            multiplier = flightSchedule.getFlight().getAirplane().getAirline().getBusinessMultiplier();
-        }
-        FlightClass flightClass = new FlightClass();
-        flightClass.setFlightSchedule(flightSchedule);
-        flightClass.setSeatClass(seatConfig.getSeatClass());
-        flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
-        flightClass.setBasePriceChild(basePrice.multiply(multiplier).
-                multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountChild().
-                        multiply(BigDecimal.valueOf(0.01)))
-        );
-        flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
-                multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountInfant().
-                        multiply(BigDecimal.valueOf(0.01)))
-        );
-        flightClass.setAvailableSeat(seatConfig.getSeatRow() * seatConfig.getSeatColumn());
-        return flightClass;
+        return airplaneSeatClasses.stream()
+                .map(airplaneSeatClass -> {
+            BigDecimal multiplier = BigDecimal.valueOf(1);
+            SeatClass seatClass = airplaneSeatClass.getSeatClass();
+            if (seatClass.equals(SeatClass.BUSINESS)) {
+                multiplier = flightSchedule.getFlight().getAirplane().getAirline().getBusinessMultiplier();
+            }
+            FlightClass flightClass = new FlightClass();
+            flightClass.setFlightSchedule(flightSchedule);
+            flightClass.setSeatClass(seatClass);
+            flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
+            flightClass.setBasePriceChild(basePrice.multiply(multiplier).
+                    multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountChild().
+                            multiply(BigDecimal.valueOf(0.01)))
+            );
+            flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
+                    multiply(flightSchedule.getFlight().getAirplane().getAirline().getDiscountInfant().
+                            multiply(BigDecimal.valueOf(0.01)))
+            );
+            flightClass.setAvailableSeat(airplaneSeatClass.getNumberOfRow() * airplaneSeatClass.getNumberOfColumn());
+            return flightClass;
+        }).collect(Collectors.toList());
+
     }
 
     @Transactional

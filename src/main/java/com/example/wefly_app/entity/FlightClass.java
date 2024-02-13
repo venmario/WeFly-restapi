@@ -8,6 +8,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Table(name = "flight_class")
 @Entity
@@ -28,6 +29,9 @@ public class FlightClass implements Serializable {
     @ManyToOne
     @JoinColumn(name = "flight_schedule_id")
     private FlightSchedule flightSchedule;
+    @JsonBackReference
+    @OneToMany(mappedBy = "flightClass", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<SeatAvailability> seatAvailabilities;
 //    @JsonManagedReference
 //    @ManyToOne
 //    @JoinColumn(name = "flight_id")

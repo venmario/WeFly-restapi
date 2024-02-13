@@ -21,6 +21,7 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,16 +49,19 @@ public class AirplaneServiceImpl implements AirplaneService {
             airplane.setType(request.getType());
             airplane.setAirline(checkDataDBAirline);
             airplane.setCode(request.getCode());
-            List<SeatConfig> seatConfigs = request.getSeats().stream()
-                            .map(seat -> {
-                                SeatConfig airplaneSeat = new SeatConfig();
-                                airplaneSeat.setSeatClass(SeatClass.valueOf(seat.getSeatClass()));
-                                airplaneSeat.setSeatRow(seat.getNumberOfRow());
-                                airplaneSeat.setSeatColumn(seat.getNumberOfColumn());
-                                airplaneSeat.setAirplane(airplane);
-                                return airplaneSeat;
-                            }).collect(Collectors.toList());
-            airplane.setSeatConfigs(seatConfigs);
+            AtomicInteger rowNumber = new AtomicInteger(1);
+            List<AirplaneSeatClass> airplaneSeatClasses = request.getSeats().stream()
+                    .map(seat -> {
+                        AirplaneSeatClass airplaneSeatClass = new AirplaneSeatClass();
+                        airplaneSeatClass.setNumberOfRow(seat.getNumberOfRow());
+                        airplaneSeatClass.setNumberOfColumn(seat.getNumberOfColumn());
+                        airplaneSeatClass.setSeatClass(SeatClass.valueOf(seat.getSeatClass()));
+                        airplaneSeatClass.setAirplane(airplane);
+                        airplaneSeatClass.setSeatConfigurations(saveSeatConfiguration(airplaneSeatClass, rowNumber.get()));
+                        rowNumber.addAndGet(seat.getNumberOfRow());
+                        return airplaneSeatClass;
+                    }).collect(Collectors.toList());
+            airplane.setAirplaneSeatClasses(airplaneSeatClasses);
             log.info("Airplane Saved");
             return templateResponse.success(airplaneRepository.save(airplane));
         } catch (Exception e) {
@@ -65,13 +69,35 @@ public class AirplaneServiceImpl implements AirplaneService {
             throw e;
         }
     }
+    
+    public List<SeatConfiguration> saveSeatConfiguration(AirplaneSeatClass airplaneSeatClass, int rowNumber){
+        List<SeatConfiguration> seatConfigs = new ArrayList<>();
+        char rowLetter = 'A';
+        int startingNumber = rowNumber;
+        SeatClass seatClass = airplaneSeatClass.getSeatClass();
+        for (int i = 0; i < airplaneSeatClass.getNumberOfColumn(); i++) {
+            rowNumber = startingNumber;
+            rowLetter = (char) (rowLetter + i);
+            for (int j = 0; j < airplaneSeatClass.getNumberOfRow(); j++) {
+                SeatConfiguration seatConfiguration = new SeatConfiguration();
+                seatConfiguration.setSeatClass(seatClass);
+                seatConfiguration.setSeatRow(String.valueOf(rowNumber));
+                seatConfiguration.setSeatColumn(String.valueOf(rowLetter));
+                seatConfiguration.setAirplaneSeatClass(airplaneSeatClass);
+                rowNumber++;
+                seatConfigs.add(seatConfiguration);
+            }
+        }
+        return seatConfigs;
+    }
 
     @Override
     public Map<Object, Object> update(AirplaneUpdateModel request, Long id) {
         try {
             log.info("Update Airplane");
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(id);
-            if (!checkDataDBAirplane.isPresent()) throw new EntityExistsException("Airplane with id " + id + " not found");
+            if (!checkDataDBAirplane.isPresent())
+                throw new EntityExistsException("Airplane with id " + id + " not found");
             int count = 0;
             Airplane airplane = checkDataDBAirplane.get();
             if (request.getCode() != null && !request.getCode().isEmpty()) {
@@ -96,7 +122,8 @@ public class AirplaneServiceImpl implements AirplaneService {
         try {
             log.info("Delete Airplane");
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(id);
-            if (!checkDataDBAirplane.isPresent()) throw new EntityExistsException("Airplane with id " + id + " not found");
+            if (!checkDataDBAirplane.isPresent())
+                throw new EntityExistsException("Airplane with id " + id + " not found");
             Airplane airplane = checkDataDBAirplane.get();
             log.info("Airplane Deleted");
             return templateResponse.success("Airplane with id " + id + " deleted");
@@ -111,7 +138,8 @@ public class AirplaneServiceImpl implements AirplaneService {
         try {
             log.info("Get Airplane By Id");
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(id);
-            if (!checkDataDBAirplane.isPresent()) throw new EntityExistsException("Airplane with id " + id + " not found");
+            if (!checkDataDBAirplane.isPresent())
+                throw new EntityExistsException("Airplane with id " + id + " not found");
             log.info("Airplane Found");
             return templateResponse.success(checkDataDBAirplane.get());
         } catch (Exception e) {

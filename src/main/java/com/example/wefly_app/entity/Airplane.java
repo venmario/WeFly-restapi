@@ -27,6 +27,6 @@ public class Airplane extends AbstractDate implements Serializable {
     private Airline airline;
     @JsonBackReference
     @OneToMany(mappedBy = "airplane", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<SeatConfig> seatConfigs;
+    private List<AirplaneSeatClass> airplaneSeatClasses;
 
 }

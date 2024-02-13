@@ -12,13 +12,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface BoardingPassRepository extends JpaSpecificationExecutor<BoardingPass>, PagingAndSortingRepository<BoardingPass, Long> {
-    @Query("SELECT sa FROM SeatAvailability sa " +
-            "JOIN sa.flightSchedule fs " +
-            "JOIN fs.flightClasses fc " +
-            "WHERE sa.available = true " +
-            "AND fc.id = :flightClassId " +
-            "AND sa.seatClass = fc.seatClass")
-    List<SeatAvailability> findAvailableSeats(@Param("flightClassId") Long flightClassId);
+//    @Query("SELECT sa FROM SeatAvailability sa " +
+//            "JOIN sa.flightSchedule fs " +
+//            "JOIN fs.flightClasses fc " +
+//            "WHERE sa.available = true " +
+//            "AND fc.id = :flightClassId " +
+//            "AND sa.seatClass = fc.seatClass")
+//    List<SeatAvailability> findAvailableSeats(@Param("flightClassId") Long flightClassId);
 
     @Query("SELECT new com.example.wefly_app.request.checkin.BoardingPassDTO(" +
             "fs.departureDate, f.flightCode, fc.seatClass, dep.iata, arr.iata, f.departureTime, f.arrivalTime) " +
