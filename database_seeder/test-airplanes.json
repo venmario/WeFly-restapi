@@ -1,16 +1,14 @@
-[
-  {
-    "type": "AIRBUS-A320",
-    "airlineId": 1,
-    "code": "PK-EXA",
-    "seats": [
-      {
-        "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
-      }
-    ]
-  },
+[{"type": "AIRBUS-A320",
+  "airlineId": 1,
+  "code": "PK-EXA",
+  "seats": [
+    {
+      "seatClass": "ECONOMY",
+      "numberOfColumn": 6,
+      "numberOfRow": 30
+    }
+  ]
+},
   {
     "type": "AIRBUS-A320",
     "airlineId": 1,
@@ -18,13 +16,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -35,8 +33,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -47,13 +45,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -64,8 +62,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -76,13 +74,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -93,8 +91,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -105,13 +103,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -122,8 +120,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -134,13 +132,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -151,8 +149,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -163,13 +161,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -180,8 +178,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -192,13 +190,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   },
@@ -209,8 +207,8 @@
     "seats": [
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 30,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 30
       }
     ]
   },
@@ -221,13 +219,13 @@
     "seats": [
       {
         "seatClass": "BUSINESS",
-        "numberOfColumn": 5,
-        "numberOfRow": 4
+        "numberOfColumn": 4,
+        "numberOfRow": 5
       },
       {
         "seatClass": "ECONOMY",
-        "numberOfColumn": 20,
-        "numberOfRow": 6
+        "numberOfColumn": 6,
+        "numberOfRow": 20
       }
     ]
   }

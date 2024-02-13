@@ -63,21 +63,20 @@ public class FlightServiceImpl implements FlightService {
             log.info("Save New Flight");
             Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
             Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
-            Optional<Airline> checkDataDBAirline = airlineRepository.findById(request.getAirlineId());
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplaneId());
             String missingEntities = Stream.of(
-                    !checkDataDBAirline.isPresent() ? "Airline with id " + request.getAirplaneId() : null,
                     !checkDataDBAirplane.isPresent() ? "Airplane with id " + request.getAirplaneId() : null,
                     !checkDataDBArrivalAirport.isPresent() ? "Arrival Airport with id " + request.getArrivalAirportId() : null,
                     !checkDataDBDepartureAirport.isPresent() ? "Departure Airport with id " + request.getDepartureAirportId() : null
             ).filter(Objects::nonNull).collect(Collectors.joining(","));
             if (!missingEntities.isEmpty()) throw new EntityNotFoundException(missingEntities + " not found");
-            if (checkDataDBAirplane.get().getAirline().getId() != checkDataDBAirline.get().getId()) {
+            Airline checkDataAirline = checkDataDBAirplane.get().getAirline();
+            if (checkDataAirline.getId() != request.getAirlineId()) {
                 throw new IllegalArgumentException("Airplane with id " + request.getAirplaneId() + " not belong to Airline with id " + request.getAirlineId());
             }
-            Long count = flightRepository.countByAirlineId(checkDataDBAirline.get().getId());
+            Long count = flightRepository.countByAirlineId(checkDataAirline.getId());
             Flight flight = new Flight();
-            flight.setFlightCode(checkDataDBAirline.get().getCode() + "-" + (count + 1));
+            flight.setFlightCode(checkDataAirline.getCode() + "-" + (count + 1));
             flight.setDepartureTime(request.getDepartureTime());
             flight.setArrivalTime(request.getArrivalTime());
             flight.setDepartureAirport(checkDataDBDepartureAirport.get());
@@ -91,7 +90,7 @@ public class FlightServiceImpl implements FlightService {
             flight.setScheduleFriday(request.isScheduleFriday());
             flight.setScheduleSaturday(request.isScheduleSaturday());
             flight.setScheduleSunday(request.isScheduleSunday());
-            flight.setAirline(checkDataDBAirline.get());
+            flight.setAirline(checkDataAirline);
             flight.setFlightSchedules(flightSchedules(flight, 3));
             log.info("Flight Saved");
             flightRepository.save(flight);
@@ -138,20 +137,22 @@ public class FlightServiceImpl implements FlightService {
 
     public List<SeatAvailability> seatAvailabilities (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule){
         List<SeatAvailability> seatAvailabilities = new ArrayList<>();
+        int rowNumber = 1;
         for (SeatConfig seatConfig : seatConfigs) {
-            char rowLetter = 'A';
-            for (int i = 0; i < seatConfig.getSeatRow(); i++) {
-                rowLetter = (char) (rowLetter + i);
-                for (int j = 1; j <= seatConfig.getSeatColumn(); j++) {
+            char columnLetter = 'A';
+            for (int i = 0; i < seatConfig.getSeatColumn(); i++) {
+                columnLetter = (char) (columnLetter + i);
+                for (int j = 0; j < seatConfig.getSeatRow(); j++) {
                     SeatAvailability seatAvailability = new SeatAvailability();
                     seatAvailability.setSeatConfig(seatConfig);
-                    seatAvailability.setSeatRow(String.valueOf(rowLetter));
-                    seatAvailability.setSeatColumn(String.valueOf(j));
+                    seatAvailability.setSeatRow(String.valueOf(rowNumber + j));
+                    seatAvailability.setSeatColumn(String.valueOf(columnLetter));
                     seatAvailability.setFlightSchedule(flightSchedule);
                     seatAvailability.setSeatClass(seatConfig.getSeatClass());
                     seatAvailabilities.add(seatAvailability);
                 }
             }
+            rowNumber += seatConfig.getSeatRow();
         }
 
         return seatAvailabilities;
