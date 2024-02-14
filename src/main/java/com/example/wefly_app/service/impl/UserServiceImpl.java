@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
             user.setOtpExpiredDate(expirationDate);
             template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
             template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  activationUrl + otp);
-            emailSender.sendAsync(user.getUsername(), "Register", template);
+//            emailSender.sendAsync(user.getUsername(), "Register", template);
             userRepository.save(user);
 
             log.info("register success!");
@@ -294,7 +294,7 @@ public class UserServiceImpl implements UserService {
                     checkUser.getUsername()));
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", checkUser.getOtp());
         }
-        emailSender.sendAsync(checkUser.getUsername(), "WeFly - Forget Password", template);
+//        emailSender.sendAsync(checkUser.getUsername(), "WeFly - Forget Password", template);
         log.info("Forgot Password OTP Request Success");
         return templateResponse.success("Please check email for reset password");
     }
