@@ -3,7 +3,8 @@ name: Java CI/CD Pipeline
 on:
   push:
     branches:
-      - feature/transaction-api
+      - development
+      - main
 
 jobs:
   build:

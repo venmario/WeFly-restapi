@@ -1,5 +1,5 @@
 package com.example.wefly_app.entity.enums;
 
 public enum SeatClass {
-    BUSINESS, ECONOMY, FIRST_CLASS
+    ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST_CLASS
 }
