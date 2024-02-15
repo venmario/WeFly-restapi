@@ -60,7 +60,7 @@ public class AirportController {
     }
 
     @GetMapping(value = {"/listDropDown", "/listDropDown/"})
-    public ResponseEntity<Map> getAll(@RequestParam(required = false, defaultValue = "name") String orderBy,
+    public ResponseEntity<Map> getAllDropDown(@RequestParam(required = false, defaultValue = "name") String orderBy,
                                       @RequestParam(required = false, defaultValue = "ASC") String orderType,
                                       @RequestParam(required = false) String name,
                                       @RequestParam(required = false) String city,
