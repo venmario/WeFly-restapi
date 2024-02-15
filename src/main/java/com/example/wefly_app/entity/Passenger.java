@@ -23,10 +23,6 @@ public class Passenger implements Serializable {
     @ManyToOne
     @JoinColumn(name = "transaction_id")
     private Transaction transaction;
-    @JsonManagedReference
-    @OneToOne
-    @JoinColumn(name = "seat_availability_id")
-    private SeatAvailability seatAvailability;
     private String firstName;
     private String lastName;
     private String nationality;

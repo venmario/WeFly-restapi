@@ -84,7 +84,6 @@ public class TransactionImpl implements TransactionService {
     public final FlightClassRepository flightClassRepository;
     public final TemplateResponse templateResponse;
     public final SimpleStringUtils simpleStringUtils;
-    public final BankRepository bankRepository;
     public final PaymentRepository paymentRepository;
     private final CheckinService checkinService;
     private final EmailTemplate emailTemplate;
@@ -96,7 +95,7 @@ public class TransactionImpl implements TransactionService {
     public TransactionImpl (@Value("${midtrans.server-key}") String serverKey,
                             TransactionRepository transactionRepository, UserRepository userRepository,
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
-                            SimpleStringUtils simpleStringUtils, BankRepository bankRepository, PaymentRepository paymentRepository,
+                            SimpleStringUtils simpleStringUtils, PaymentRepository paymentRepository,
                             FileStorageProperties fileStorageProperties, CheckinService checkinService,
                             EmailTemplate emailTemplate, EmailSender emailSender,
                             @Value("${frontend.homepage.url}") String homePageUrl) {
@@ -106,7 +105,6 @@ public class TransactionImpl implements TransactionService {
         this.flightClassRepository = flightClassRepository;
         this.templateResponse = templateResponse;
         this.simpleStringUtils = simpleStringUtils;
-        this.bankRepository = bankRepository;
         this.paymentRepository = paymentRepository;
         this.checkinService = checkinService;
         this.emailTemplate = emailTemplate;
