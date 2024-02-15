@@ -346,23 +346,14 @@ public class FlightServiceImpl implements FlightService {
         Flight flight = request.getFlightSchedule().getFlight();
         ModelMapper modelMapper = new ModelMapper();
         com.example.wefly_app.request.android.FlightClass dto = modelMapper.map(request, com.example.wefly_app.request.android.FlightClass.class);
-        com.example.wefly_app.request.android.Flight flightDto = new com.example.wefly_app.request.android.Flight();
+        com.example.wefly_app.request.android.Flight flightDto = modelMapper.map(flight, com.example.wefly_app.request.android.Flight.class);
         com.example.wefly_app.request.android.Airplane airplaneDto = modelMapper.map(flight.getAirplane(), com.example.wefly_app.request.android.Airplane.class);
 
         airplaneDto.setName(flight.getAirplane().getCode());
-        flightDto.setCreatedDate(flight.getCreatedDate());
-        flightDto.setUpdatedDate(flight.getUpdatedDate());
-        flightDto.setDeletedDate(flight.getDeletedDate());
         flightDto.setFlightNumber(flight.getFlightCode());
-        flightDto.setDepartureAirport(flight.getDepartureAirport());
-        flightDto.setArrivalAirport(flight.getArrivalAirport());
         flightDto.setAirplane(airplaneDto);
         flightDto.setDepartureDate(request.getFlightSchedule().getDepartureDate());
         flightDto.setArrivalDate(request.getFlightSchedule().getArrivalDate());
-        flightDto.setDepartureTime(flight.getDepartureTime());
-        flightDto.setArrivalTime(flight.getArrivalTime());
-        flightDto.setBasePrice(flight.getBasePrice());
-
         dto.setFlight(flightDto);
 
         log.info("Mapping DTO for Android Success");

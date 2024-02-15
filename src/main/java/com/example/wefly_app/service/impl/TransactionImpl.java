@@ -311,8 +311,7 @@ public class TransactionImpl implements TransactionService {
                 payment = generatePaymentProof(payment);
                 checkinService.saveETicket(payment.getTransaction());
                 sendEmailPaymentProofAndETicket(payment.getTransaction());
-            }
-            if (request.getTransactionStatus().matches("expire")) {
+            } else if (request.getTransactionStatus().matches("expire")) {
                 log.info("Reverting flight class seat available");
                 int totalSeatBooked = checkDataDBTransaction.get().getAdultPassenger()
                         + checkDataDBTransaction.get().getChildPassenger();
