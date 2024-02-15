@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -181,6 +182,53 @@ public class AirportServiceImpl implements AirportService {
             Map<Object, Object> map = new HashMap<>();
             map.put("data", list);
             log.info("List Airports Found");
+            return map;
+        } catch (Exception e) {
+            log.error("Error Getting Airports", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Map<Object, Object> getAllDropDown(String orderBy, String orderType,
+                                      String name, String city, String country,
+                                      String iata, String icao, String province) {
+        try {
+            log.info("Get List Airports Drop Down");
+            Sort sort = Sort.by(Sort.Direction.fromString(orderType), orderBy);
+            Specification<Airport> specification = ((root, criteriaQuery, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                if (name != null && !name.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+                    log.info("list airport name like");
+                }
+                if (city != null && !city.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("city")), "%" + city.toLowerCase() + "%"));
+                    log.info("list airport city like");
+                }
+                if (country != null && !country.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("country")), "%" + country.toLowerCase() + "%"));
+                    log.info("list airport country like");
+                }
+                if (iata != null && !iata.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("iata")), "%" + iata.toLowerCase() + "%"));
+                    log.info("list airport airportCode like");
+                }
+                if (icao != null && !icao.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("icao")), "%" + icao.toLowerCase() + "%"));
+                    log.info("list airport airportCode like");
+                }
+                if (province != null && !province.isEmpty()) {
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("province")), "%" + province.toLowerCase() + "%"));
+                    log.info("list airport province like");
+                }
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            });
+
+            List<Airport> list = airportRepository.findAll(specification, sort);
+            Map<Object, Object> map = new HashMap<>();
+            map.put("data", list);
+            log.info("List Airports Drop Down Found");
             return map;
         } catch (Exception e) {
             log.error("Error Getting Airports", e);

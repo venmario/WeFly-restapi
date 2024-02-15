@@ -373,28 +373,4 @@ public class FlightServiceImpl implements FlightService {
             throw e;
         }
     }
-
-//    private List<FlightClass> setFlightClass (Airplane airplane, Flight flight, BigDecimal basePrice) {
-//        return airplane.getSeats().stream()
-//                .map(seatClass -> {
-//                    FlightClass flightClass = new FlightClass();
-//                    flightClass.setFlight(flight);
-//                    flightClass.setSeatClass(seatClass.getSeatClass());
-//                    BigDecimal multiplier = BigDecimal.valueOf(1);
-//                    if (seatClass.getSeatClass().equals(SeatClass.BUSINESS)) {
-//                        multiplier = airplane.getAirline().getBusinessMultiplier();
-//                    }
-//                    flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
-//                    flightClass.setBasePriceChild(basePrice.multiply(multiplier).
-//                            multiply(airplane.getAirline().getDiscountChild().
-//                                    multiply(BigDecimal.valueOf(0.01)))
-//                    );
-//                    flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
-//                            multiply(airplane.getAirline().getDiscountInfant().
-//                                    multiply(BigDecimal.valueOf(0.01)))
-//                    );
-//                    flightClass.setAvailableSeat(seatClass.getSeatRow() * seatClass.getSeatColumn());
-//                    return flightClass;
-//                }).collect(Collectors.toList());
-//    }
 }

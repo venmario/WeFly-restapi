@@ -322,6 +322,7 @@ public class TransactionImpl implements TransactionService {
                             flightClassRepository.save(flightClass);
                         });
                 log.info("Revert success");
+                payment.setTransactionStatus(request.getTransactionStatus());
             } else {
                 payment.setTransactionStatus(request.getTransactionStatus());
             }
