@@ -43,6 +43,8 @@ public class UserServiceImpl implements UserService {
     private String baseUrl;
     @Value("${frontend.email.activation}")
     private String activationUrl;
+    @Value("${frontend.homepage.url}")
+    private String homePageUrl;
     @Autowired
     RoleRepository repoRole;
     @Autowired
@@ -131,7 +133,6 @@ public class UserServiceImpl implements UserService {
             user.setPassword(password);
 
             String template = emailTemplate.getRegisterTemplate();
-            String fullname = user.getFullName();
             User search;
             String otp;
             do {
@@ -146,9 +147,10 @@ public class UserServiceImpl implements UserService {
 
             user.setOtp(otp);
             user.setOtpExpiredDate(expirationDate);
-            template = template.replaceAll("\\{\\{USERNAME}}", (fullname== null ? user.getUsername() : fullname));
-            template = template.replaceAll("\\{\\{VERIFY_TOKEN}}",  activationUrl + otp);
-//            emailSender.sendAsync(user.getUsername(), "Register", template);
+            template = template.replaceAll("\\{\\{USERNAME}}", user.getUsername());
+            template = template.replaceAll("\\{\\{CONFIRMATION_URL}}",  activationUrl + otp);
+            template = template.replaceAll("\\{\\{HOMEPAGE_URL}}", homePageUrl);
+            emailSender.sendAsync(user.getUsername(), "Account Activation", template, null);
             userRepository.save(user);
 
             log.info("register success!");
@@ -265,7 +267,7 @@ public class UserServiceImpl implements UserService {
             throw new IncorrectUserCredentialException("User credential don't match an account in our system");
         }
 
-        String template = emailTemplate.getResetPassword();
+        String template = emailTemplate.getResetPasswordOTP();
         if (checkUser.getOtp() == null) {
             User search;
             String otp;
@@ -282,19 +284,14 @@ public class UserServiceImpl implements UserService {
             checkUser.setOtp(otp);
             checkUser.setOtpExpiredDate(expirationDate);
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", otp);
-            template = template.replaceAll("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "UserName"
-                    :
-                    checkUser.getUsername()));
 
             userRepository.save(checkUser);
         } else {
-            template = template.replaceAll("\\{\\{USERNAME}}", (checkUser.getUsername() == null ? "" +
-                    "UserName"
-                    :
-                    checkUser.getUsername()));
             template = template.replaceAll("\\{\\{PASS_TOKEN}}", checkUser.getOtp());
         }
-//        emailSender.sendAsync(checkUser.getUsername(), "WeFly - Forget Password", template);
+        template = template.replaceAll("\\{\\{USERNAME}}", checkUser.getFullName());
+        template = template.replaceAll("\\{\\{HOMEPAGE_URL}}", homePageUrl);
+        emailSender.sendAsync(checkUser.getUsername(), "Forget Password OTP Request", template, null);
         log.info("Forgot Password OTP Request Success");
         return templateResponse.success("Please check email for reset password");
     }

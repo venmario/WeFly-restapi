@@ -8,7 +8,6 @@ import java.time.LocalTime;
 
 @Data
 public class ETicketDTO {
-    private String bookCode;
     private LocalDate departureDate;
     private LocalDate arrivalDate;
     private String flightCode;
@@ -25,11 +24,10 @@ public class ETicketDTO {
     private LocalTime departureTime;
     private LocalTime arrivalTime;
 
-    public ETicketDTO(String bookCode, LocalDate departureDate, LocalDate arrivalDate, String flightCode,
+    public ETicketDTO(LocalDate departureDate, LocalDate arrivalDate, String flightCode,
                       SeatClass seatClass, String airlineName, String departAirportName, String departIata,
                       String departCity, String departProvince, String arrivalAirportName, String arrivalIata,
                       String arrivalCity, String arrivalProvince, LocalTime departureTime, LocalTime arrivalTime) {
-        this.bookCode = bookCode;
         this.departureDate = departureDate;
         this.arrivalDate = arrivalDate;
         this.flightCode = flightCode;

@@ -13,18 +13,16 @@ public interface ETicketRepository extends PagingAndSortingRepository<ETicket, L
     ETicket getETicketByBookCode (@Param("bookCode") String bookCode);
 
     @Query("SELECT new com.example.wefly_app.request.checkin.ETicketDTO(" +
-            "et.bookCode, fs.departureDate, fs.arrivalDate, f.flightCode, fc.seatClass, al.name, " +
+            "fs.departureDate, fs.arrivalDate, f.flightCode, fc.seatClass, al.name, " +
             "dep.name, dep.iata, dep.city, dep.province, arr.name, arr.iata, arr.city, arr.province, " +
             "f.departureTime, f.arrivalTime) " +
-            "FROM ETicket et " +
-            "JOIN et.transaction t " +
-            "JOIN et.transactionDetail td " +
+            "FROM TransactionDetail td " +
             "JOIN td.flightClass fc " +
             "JOIN fc.flightSchedule fs " +
             "JOIN fs.flight f " +
             "JOIN f.airline al " +
             "JOIN f.departureAirport dep " +
             "JOIN f.arrivalAirport arr " +
-            "WHERE t.id =:transactionId")
-    ETicketDTO findFlightDetailsByTransactionId(@Param("transactionId") Long transactionId);
+            "WHERE td.id =:transactionDetailId")
+    ETicketDTO getETicketDTO(@Param("transactionDetailId") Long transactionDetailId);
 }

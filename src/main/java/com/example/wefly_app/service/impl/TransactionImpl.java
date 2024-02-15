@@ -8,9 +8,7 @@ import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.CheckinService;
 import com.example.wefly_app.service.TransactionService;
-import com.example.wefly_app.util.FileStorageProperties;
-import com.example.wefly_app.util.SimpleStringUtils;
-import com.example.wefly_app.util.TemplateResponse;
+import com.example.wefly_app.util.*;
 import com.example.wefly_app.util.exception.FileStorageException;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
 import com.example.wefly_app.util.exception.ValidationException;
@@ -79,17 +77,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class TransactionImpl implements TransactionService {
-    private final Path fileStorageLocation;
-//    @Autowired
-//    public TransactionImpl (FileStorageProperties fileStorageProperties) {
-//        this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
-//                .toAbsolutePath().normalize();
-//        try {
-//            Files.createDirectories(this.fileStorageLocation);
-//        } catch (Exception ex) {
-//            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
-//        }
-//    }
+    private final Map<String, Path> fileStorageLocation = new HashMap<>();
     private final String serverKey;
     public final TransactionRepository transactionRepository;
     public final UserRepository userRepository;
@@ -98,8 +86,10 @@ public class TransactionImpl implements TransactionService {
     public final SimpleStringUtils simpleStringUtils;
     public final BankRepository bankRepository;
     public final PaymentRepository paymentRepository;
-    private final ETicketRepository eticketRepository;
     private final CheckinService checkinService;
+    private final EmailTemplate emailTemplate;
+    private final EmailSender emailSender;
+    private final String homePageUrl;
 
 
     @Autowired
@@ -107,8 +97,9 @@ public class TransactionImpl implements TransactionService {
                             TransactionRepository transactionRepository, UserRepository userRepository,
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
                             SimpleStringUtils simpleStringUtils, BankRepository bankRepository, PaymentRepository paymentRepository,
-                            FileStorageProperties fileStorageProperties, ETicketRepository eticketRepository,
-                            CheckinService checkinService) {
+                            FileStorageProperties fileStorageProperties, CheckinService checkinService,
+                            EmailTemplate emailTemplate, EmailSender emailSender,
+                            @Value("${frontend.homepage.url}") String homePageUrl) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -117,12 +108,17 @@ public class TransactionImpl implements TransactionService {
         this.simpleStringUtils = simpleStringUtils;
         this.bankRepository = bankRepository;
         this.paymentRepository = paymentRepository;
-        this.eticketRepository = eticketRepository;
         this.checkinService = checkinService;
-        this.fileStorageLocation = Paths.get(fileStorageProperties.getInvoiceDir())
-                .toAbsolutePath().normalize();
+        this.emailTemplate = emailTemplate;
+        this.emailSender = emailSender;
+        this.homePageUrl = homePageUrl;
+        Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
+        Path paymenProof = Paths.get(fileStorageProperties.getPaymentProofDir()).toAbsolutePath().normalize();
+        this.fileStorageLocation.put("eticket", eticket);
+        this.fileStorageLocation.put("paymentProof", paymenProof);
         try {
-            Files.createDirectories(this.fileStorageLocation);
+            Files.createDirectories(eticket);
+            Files.createDirectories(paymenProof);
         } catch (Exception ex) {
             throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
@@ -314,9 +310,9 @@ public class TransactionImpl implements TransactionService {
             }
             if (request.getTransactionStatus().matches("settlement|capture")) {
                 payment.setTransactionStatus("PAID");
-                payment = generateInvoice(payment);
-                checkinService.save(payment.getTransaction());
-                checkinService.generateETicket(payment.getTransaction());
+                payment = generatePaymentProof(payment);
+                checkinService.saveETicket(payment.getTransaction());
+                sendEmailPaymentProofAndETicket(payment.getTransaction());
             } else {
                 payment.setTransactionStatus(request.getTransactionStatus());
             }
@@ -330,7 +326,7 @@ public class TransactionImpl implements TransactionService {
     }
 
     @Override
-    public Resource getInvoice(Long transactionId) {
+    public Resource getPaymentProof(Long transactionId) {
         try {
             log.info("get invoice");
             ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -344,7 +340,7 @@ public class TransactionImpl implements TransactionService {
             Optional<Transaction> checkDataDBTransaction = transactionRepository.findById(transactionId);
             if (checkDataDBTransaction.get().getUser().getId() != userId)
                 throw new ValidationException("transaction not found");
-            Path filePath = this.fileStorageLocation.resolve(checkDataDBTransaction.get().getPayment().getInvoice()).normalize();
+            Path filePath = this.fileStorageLocation.get("paymentProof").resolve(checkDataDBTransaction.get().getPayment().getInvoice()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) throw new FileStorageException("File not found " + filePath);
             else {
@@ -471,13 +467,33 @@ public class TransactionImpl implements TransactionService {
         }
     }
 
+    public void sendEmailPaymentProofAndETicket(Transaction request) {
+        log.info("Send Payment Proof and E-Ticket via Email");
+        String template = emailTemplate.getPaymentProofTemplate();
+        User user = request.getUser();
+        String message = "We have received payment for your order. The Payment Proof and E-Ticket are attached below. " +
+                "Thank your for using our services!";
+        String thankMessage = "Thank You";
+        template = template.replaceAll("\\{\\{USERNAME}}", user.getFullName());
+        template = template.replaceAll("\\{\\{HOMEPAGE_URL}}", homePageUrl);
+        template = template.replaceAll("\\{\\{MESSAGE}}", message);
+        template = template.replaceAll("\\{\\{THANK_MESSAGE}}", thankMessage);
+        String eTicket = String.valueOf(this.fileStorageLocation.get("eticket").resolve(request.getEticketFile()).normalize());
+        String paymentProof = String.valueOf(this.fileStorageLocation.get("paymentProof").resolve(request.getPayment().getInvoice()));
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add(eTicket);
+        filePaths.add(paymentProof);
+        emailSender.sendAsync(user.getUsername(), "Payment Proof and ETicket", template, filePaths);
+        log.info("Email Sent");
+    }
+
 
     @Transactional
-    public Payment generateInvoice(Payment request) throws IOException {
+    public Payment generatePaymentProof(Payment request) throws IOException {
         log.info("generate invoice");
         Transaction transaction = request.getTransaction();
-        String fileName = "invoice-" + transaction.getId() + ".pdf";
-        String path = "invoice/" + fileName;
+        String fileName = "Payment Proof-" + transaction.getId() + ".pdf";
+        String path = "payment-proof/" + fileName;
         PdfWriter writer = new PdfWriter(path);
         PdfDocument pdf = new PdfDocument(writer);
         try (Document document = new Document(pdf, PageSize.A4)) {
@@ -659,7 +675,6 @@ public class TransactionImpl implements TransactionService {
             throw new EntityNotFoundException("transaction not found");
         }
         Transaction transaction = checkDataDBTransaction.get();
-//        Hibernate.initialize(transaction.getTransactionDetails());
         InvoiceDTO invoiceDTO = new InvoiceDTO();
         invoiceDTO.setOrderer(transaction.getOrderer());
         invoiceDTO.setPayment(transaction.getPayment());

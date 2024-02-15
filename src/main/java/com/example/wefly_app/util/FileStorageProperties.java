@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "file")
 public class FileStorageProperties {
-    @Value("${app.file.invoice}")
-    private String invoiceDir;
+    @Value("${app.file.payment-proof}")
+    private String paymentProofDir;
     @Value("${app.file.e-ticket}")
     private String eTicketDir;
     @Value("${app.file.boarding-pass}")

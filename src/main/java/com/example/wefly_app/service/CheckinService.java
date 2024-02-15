@@ -7,8 +7,8 @@ import org.springframework.core.io.Resource;
 import java.util.Map;
 
 public interface CheckinService {
-    void save(Transaction request);
-    void generateETicket(Transaction request);
+    void saveETicket(Transaction request);
+//    void generateETicket(Transaction request);
     Resource getETicket(Long transactionId);
     Resource getBoardingPass (Long eticketId);
     Map<Object, Object> checkIn(CheckinRequestModel request);

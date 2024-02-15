@@ -72,7 +72,7 @@ public class TransactionController {
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping(value = {"/getInvoice/{transactionId}", "/getInvoice/{transactionId}/"})
     public ResponseEntity<Resource> getInvoice(@PathVariable("transactionId") Long transactionId, HttpServletRequest request) {
-        Resource resource = transactionService.getInvoice(transactionId);
+        Resource resource = transactionService.getPaymentProof(transactionId);
         String contentType = null;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
@@ -93,7 +93,7 @@ public class TransactionController {
     @GetMapping(value = {"/getETicket/{transactionId}", "/getETicket/{transactionId}/"})
     public ResponseEntity<Resource> getETicket(@PathVariable("transactionId") Long transactionId, HttpServletRequest request) {
         Resource resource = checkinService.getETicket(transactionId);
-        String contentType = null;
+        String contentType;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException e) {

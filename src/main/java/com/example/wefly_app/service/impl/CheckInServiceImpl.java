@@ -1,7 +1,6 @@
 package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.*;
-import com.example.wefly_app.entity.enums.SeatClass;
 import com.example.wefly_app.repository.BoardingPassRepository;
 import com.example.wefly_app.repository.ETicketRepository;
 import com.example.wefly_app.repository.TransactionRepository;
@@ -10,9 +9,7 @@ import com.example.wefly_app.request.checkin.BoardingPassDTO;
 import com.example.wefly_app.request.checkin.CheckinRequestModel;
 import com.example.wefly_app.request.checkin.ETicketDTO;
 import com.example.wefly_app.service.CheckinService;
-import com.example.wefly_app.util.FileStorageProperties;
-import com.example.wefly_app.util.SimpleStringUtils;
-import com.example.wefly_app.util.TemplateResponse;
+import com.example.wefly_app.util.*;
 import com.example.wefly_app.util.exception.FileStorageException;
 import com.example.wefly_app.util.exception.ValidationException;
 import com.itextpdf.io.font.PdfEncodings;
@@ -36,6 +33,7 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -55,6 +53,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -66,17 +65,24 @@ public class CheckInServiceImpl implements CheckinService {
     private final TransactionRepository transactionRepository;
     private final Map<String, Path> fileStorageLocation = new HashMap<>();
     private final BoardingPassRepository boardingPassRepository;
+    private final EmailTemplate emailTemplate;
+    private final EmailSender emailSender;
+    private final String homePageUrl;
 
     public CheckInServiceImpl(SimpleStringUtils simpleStringUtils, ETicketRepository eticketRepository,
                               TemplateResponse templateResponse, FileStorageProperties fileStorageProperties,
                               UserRepository userRepository, TransactionRepository transactionRepository,
-                              BoardingPassRepository boardingPassRepository) {
+                              BoardingPassRepository boardingPassRepository, EmailSender emailSender,
+                              EmailTemplate emailTemplate, @Value("${frontend.homepage.url}")String homePageUrl) {
         this.simpleStringUtils = simpleStringUtils;
         this.eticketRepository = eticketRepository;
         this.templateResponse = templateResponse;
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
         this.boardingPassRepository = boardingPassRepository;
+        this.emailSender = emailSender;
+        this.emailTemplate = emailTemplate;
+        this.homePageUrl = homePageUrl;
         Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
         Path boardingPass = Paths.get(fileStorageProperties.getBoardingPassDir()).toAbsolutePath().normalize();
         this.fileStorageLocation.put("eticket", eticket);
@@ -88,24 +94,7 @@ public class CheckInServiceImpl implements CheckinService {
             throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", e);
         }
     }
-    @Override
-    public void save(Transaction request) {
-        log.info("Save New ETicket");
-        try {
-            List<TransactionDetail> transactionDetails = request.getTransactionDetails();
-            for (TransactionDetail transactionDetail : transactionDetails) {
-                ETicket eticket = new ETicket();
-                eticket.setTransaction(request);
-                eticket.setTransactionDetail(transactionDetail);
-                eticket.setBookCode(simpleStringUtils.randomStringChar(6));
-                eticketRepository.save(eticket);
-            }
-            log.info("ETicket Save Success");
-        } catch (Exception e) {
-            log.error("Save ETicket Error: " + e.getMessage());
-            throw new RuntimeException("Save ETicket Error: " + e.getMessage());
-        }
-    }
+
 
     @Override
     public Resource getETicket(Long transactionId) {
@@ -181,15 +170,11 @@ public class CheckInServiceImpl implements CheckinService {
 
     @Override
     @Transactional
-    public void generateETicket(Transaction request) {
-        log.info("Generate ETicket");
-        ETicketDTO eticketDTO = eticketRepository.findFlightDetailsByTransactionId(request.getId());
-//        Hibernate.initialize(request.getPassengers());
+    public void saveETicket(Transaction request) {
+        log.info("Save New ETicket");
+        List<TransactionDetail> transactionDetails = request.getTransactionDetails();
+        List<ETicket> eTickets;
         List<Passenger> passengers = request.getPassengers();
-        DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy");
-        DateTimeFormatter formatterStandard = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm");
-
         String fileName = "e-ticket-" + request.getId() + ".pdf";
         String path = "e-ticket/" + fileName;
         PdfWriter writer;
@@ -199,7 +184,42 @@ public class CheckInServiceImpl implements CheckinService {
             throw new RuntimeException("File Not Found: " + e.getMessage());
         }
         PdfDocument pdf = new PdfDocument(writer);
-        try (Document document = new Document(pdf, PageSize.A4)){
+        AtomicInteger count = new AtomicInteger(0);
+        try (Document document = new Document(pdf, PageSize.A4)) {
+            eTickets = transactionDetails.stream()
+                    .map(transactionDetail -> {
+                        if (count.get() > 0) document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+                        ETicket eticket = new ETicket();
+                        eticket.setTransaction(request);
+                        eticket.setTransactionDetail(transactionDetail);
+                        eticket.setBookCode(simpleStringUtils.randomStringChar(6));
+                        generateETicket(document, eticket, passengers);
+                        count.getAndIncrement();
+                        return eticket;
+                    }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("failed to save ETicket");
+            throw new RuntimeException("File Not Found: " + e.getMessage());
+        }
+        if (eTickets.isEmpty()){
+            log.error("Failed to generate E-Ticket");
+            throw new EntityNotFoundException("Failed to generate E-Ticket");
+        }
+        request.setEticketFile(fileName);
+        request.setEtickets(eTickets);
+        log.info("ETicket Save Success");
+        transactionRepository.save(request);
+    }
+
+    @Transactional
+    public void generateETicket(Document document, ETicket eTicket, List<Passenger> passengers){
+        log.info("Generate ETicket");
+        try {
+            ETicketDTO eticketDTO = eticketRepository.getETicketDTO(eTicket.getTransactionDetail().getId());
+            DateTimeFormatter formatterDay = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy");
+            DateTimeFormatter formatterStandard = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+            DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm");
+
             ImageData imageData = ImageDataFactory.create("properties/logo.png");
             Image image = new Image(imageData);
             PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
@@ -218,7 +238,7 @@ public class CheckInServiceImpl implements CheckinService {
             headerTable.addCell(logoCell);
 
             Text bookingCodeText = new Text("Your Booking Code: \n").setFont(regularFont).setFontSize(10);
-            Text bookingCode = new Text(eticketDTO.getBookCode()).setFont(boldFont).setFontSize(20);
+            Text bookingCode = new Text(eTicket.getBookCode()).setFont(boldFont).setFontSize(20);
             Paragraph bookingCodeParagraph = new Paragraph().add(bookingCodeText).add(bookingCode).setTextAlignment(TextAlignment.RIGHT);
             Cell bookingCodeCell = new Cell().add(bookingCodeParagraph).setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
             headerTable.addCell(bookingCodeCell);
@@ -237,7 +257,7 @@ public class CheckInServiceImpl implements CheckinService {
 
             ticketTable.addHeaderCell(new Cell().add(new Paragraph("Booking Code").setFont(regularFont).setFontSize(10))
                     .setWidth(80).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT));
-            ticketTable.addHeaderCell(new Cell().add(new Paragraph(eticketDTO.getBookCode()).setFont(regularFont).setFontSize(10)
+            ticketTable.addHeaderCell(new Cell().add(new Paragraph(eTicket.getBookCode()).setFont(regularFont).setFontSize(10)
                             .setBackgroundColor(yellowColor))
                     .setWidth(60).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
             ticketTable.addHeaderCell(new Cell().add(new Paragraph(eticketDTO.getDepartureDate().format(formatterStandard))
@@ -307,7 +327,7 @@ public class CheckInServiceImpl implements CheckinService {
             passengerTable.addHeaderCell(new Cell().add(new Paragraph("Flight Number").setFont(regularFont).setFontSize(10))
                     .setBorderBottom(bottomBorder).setTextAlignment(TextAlignment.LEFT).setWidth(100));
 
-            passengers.forEach(passenger ->{
+            passengers.forEach(passenger -> {
                 String fullName = passenger.getFirstName() + " " + passenger.getLastName();
                 passengerTable.addCell(new Cell().add(new Paragraph(String.valueOf(passengers.indexOf(passenger) + 1))
                                 .setFont(regularFont).setFontSize(10).setFontColor(greyColor))
@@ -325,13 +345,11 @@ public class CheckInServiceImpl implements CheckinService {
                                 .setFontSize(10))
                         .setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.LEFT));
             });
-
             document.add(passengerTable);
-        }catch (Exception e){
-            throw new RuntimeException("File Not Found: " + e.getMessage());
+        } catch (IOException e) {
+            log.info("Generate ETicket Error: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
-        request.setEticketFile(fileName);
-        transactionRepository.save(request);
     }
 
     @Transactional
@@ -339,14 +357,33 @@ public class CheckInServiceImpl implements CheckinService {
     public Map<Object, Object> checkIn(CheckinRequestModel request) {
         try {
             ETicket eticket = eticketRepository.getETicketByBookCode(request.getBookingCode());
+            log.info("Check ETicket Data");
             if (eticket == null) {
                 throw new EntityNotFoundException("ETicket Not Found");
             }
+            log.info("Match Orderer Data");
             if (!request.getOrdererLastName().equals(eticket.getTransaction().getOrderer().getLastName())){
                 throw new EntityNotFoundException("Orderer Not Found");
             } else {
-                eticket = saveBoardingPassEntity(eticket);
-                eticketRepository.save(eticket);
+                log.info("Generate Boarding Pass");
+                if (eticket.getBoardingPassFile() == null) {
+                    eticket = saveBoardingPassEntity(eticket);
+                    eticketRepository.save(eticket);
+                }
+                log.info("Boarding Pass Generated");
+                String template = emailTemplate.getPaymentProofTemplate();
+                String message = "Here we attached your boarding pass for all the passengers. " +
+                        "Thank you for using our services, it is a pleasure to serve you. " +
+                        "Enjoy your flight, hope you reach your destination safely.";
+                String thankMessage = "Best Regards,";
+                template = template.replaceAll("\\{\\{USERNAME}}", eticket.getTransaction().getUser().getFullName());
+                template = template.replaceAll("\\{\\{HOMEPAGE_URL}}", homePageUrl);
+                template = template.replaceAll("\\{\\{MESSAGE}}", message);
+                template = template.replaceAll("\\{\\{THANK_MESSAGE}}", thankMessage);
+                String boardingPass = String.valueOf(this.fileStorageLocation.get("boardingPass").resolve(eticket.getBoardingPassFile()));
+                List<String> filePaths = new ArrayList<>();
+                filePaths.add(boardingPass);
+                emailSender.sendAsync(eticket.getTransaction().getUser().getUsername(), "Boarding Pass", template, filePaths);
                 return templateResponse.success("Check In Success, check your email for boarding pass");
             }
         } catch (Exception e) {
