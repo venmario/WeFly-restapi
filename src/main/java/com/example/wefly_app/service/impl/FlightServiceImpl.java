@@ -10,6 +10,7 @@ import com.example.wefly_app.service.FlightService;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -298,6 +299,74 @@ public class FlightServiceImpl implements FlightService {
             log.error("Error Getting All Flights", e);
             throw e;
         }
+    }
+
+    @Override
+    public Map<Object, Object> getAllDtoAndroid(int page, int size, String orderBy, String orderType, Long departureAirportId,
+                                      Long arrivalAirportId, Long airLineId, String departureDate,
+                                      String departureTime, String arrivalTime, Integer numberOfPassengers,
+                                      String seatClass) {
+        try {
+            log.info("Get All Flights");
+            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
+            Specification<FlightClass> specification = ((root, query, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate depart = LocalDate.parse(departureDate, formatter);
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("departureDate"), depart));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("departureAirport").get("id"), departureAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("arrivalAirport").get("id"), arrivalAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("seatClass"), SeatClass.valueOf(seatClass)));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("availableSeat"), numberOfPassengers));
+                if (airLineId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("airline").get("id"), airLineId));
+                }
+                if (departureTime != null && !departureTime.isEmpty() && arrivalTime != null && !arrivalTime.isEmpty()) {
+                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                    LocalTime departureTimeFormat = LocalTime.parse(departureTime, timeFormatter);
+                    LocalTime arrivalTimeFormat = LocalTime.parse(arrivalTime, timeFormatter);
+                    predicates.add(criteriaBuilder.between(root.get("flightSchedule").get("flight").
+                            get("departureTime"), departureTimeFormat, arrivalTimeFormat));
+                }
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            });
+
+            Page<FlightClass> list = flightClassRepository.findAll(specification, pageable);
+            Page<com.example.wefly_app.request.android.FlightClass> dtoPage = list.map(this::convertAndroidDTO);
+            log.info("Flights Found");
+            return templateResponse.success(dtoPage);
+        } catch (Exception e) {
+            log.error("Error Getting All Flights", e);
+            throw e;
+        }
+    }
+
+    public com.example.wefly_app.request.android.FlightClass convertAndroidDTO(FlightClass request) {
+        log.info("Mapping to DTO for android");
+        Flight flight = request.getFlightSchedule().getFlight();
+        ModelMapper modelMapper = new ModelMapper();
+        com.example.wefly_app.request.android.FlightClass dto = modelMapper.map(request, com.example.wefly_app.request.android.FlightClass.class);
+        com.example.wefly_app.request.android.Flight flightDto = new com.example.wefly_app.request.android.Flight();
+        com.example.wefly_app.request.android.Airplane airplaneDto = modelMapper.map(flight.getAirplane(), com.example.wefly_app.request.android.Airplane.class);
+
+        airplaneDto.setName(flight.getAirplane().getCode());
+        flightDto.setCreatedDate(flight.getCreatedDate());
+        flightDto.setUpdatedDate(flight.getUpdatedDate());
+        flightDto.setDeletedDate(flight.getDeletedDate());
+        flightDto.setFlightNumber(flight.getFlightCode());
+        flightDto.setDepartureAirport(flight.getDepartureAirport());
+        flightDto.setArrivalAirport(flight.getArrivalAirport());
+        flightDto.setAirplane(airplaneDto);
+        flightDto.setDepartureDate(request.getFlightSchedule().getDepartureDate());
+        flightDto.setArrivalDate(request.getFlightSchedule().getArrivalDate());
+        flightDto.setDepartureTime(flight.getDepartureTime());
+        flightDto.setArrivalTime(flight.getArrivalTime());
+        flightDto.setBasePrice(flight.getBasePrice());
+
+        dto.setFlight(flightDto);
+
+        log.info("Mapping DTO for Android Success");
+        return dto;
     }
 
     @Override
