@@ -18,6 +18,9 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Build with Maven
+        env:
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
         run: mvn clean package
       - name: Upload JAR file
         uses: actions/upload-artifact@v2
