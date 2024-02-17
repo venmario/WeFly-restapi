@@ -21,6 +21,7 @@ jobs:
         env:
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         run: mvn clean package
       - name: Upload JAR file
         uses: actions/upload-artifact@v2
