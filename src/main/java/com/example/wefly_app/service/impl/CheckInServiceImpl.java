@@ -108,7 +108,7 @@ public class CheckInServiceImpl implements CheckinService {
                 throw new EntityNotFoundException("User Not Found");
             }
             Optional<Transaction> checkDBTransaction = transactionRepository.findById(transactionId);
-            if (!checkDBTransaction.isPresent()) {
+            if (!checkDBTransaction.isPresent() || checkDBTransaction.get().getUser().getId() != checkDBUser.get().getId()) {
                 log.info("Unauthorized Access");
                 throw new EntityNotFoundException("Transaction Not Found");
             }

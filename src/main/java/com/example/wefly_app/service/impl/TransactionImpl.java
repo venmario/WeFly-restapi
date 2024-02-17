@@ -2,6 +2,7 @@ package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.*;
 import com.example.wefly_app.repository.*;
+import com.example.wefly_app.request.checkin.ETicketDTO;
 import com.example.wefly_app.request.transaction.InvoiceDTO;
 import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
@@ -89,6 +90,7 @@ public class TransactionImpl implements TransactionService {
     private final EmailTemplate emailTemplate;
     private final EmailSender emailSender;
     private final String homePageUrl;
+    private final ETicketRepository eTicketRepository;
 
 
     @Autowired
@@ -97,7 +99,7 @@ public class TransactionImpl implements TransactionService {
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
                             SimpleStringUtils simpleStringUtils, PaymentRepository paymentRepository,
                             FileStorageProperties fileStorageProperties, CheckinService checkinService,
-                            EmailTemplate emailTemplate, EmailSender emailSender,
+                            EmailTemplate emailTemplate, EmailSender emailSender, ETicketRepository eTicketRepository,
                             @Value("${frontend.homepage.url}") String homePageUrl) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
@@ -110,6 +112,7 @@ public class TransactionImpl implements TransactionService {
         this.emailTemplate = emailTemplate;
         this.emailSender = emailSender;
         this.homePageUrl = homePageUrl;
+        this.eTicketRepository = eTicketRepository;
         Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
         Path paymenProof = Paths.get(fileStorageProperties.getPaymentProofDir()).toAbsolutePath().normalize();
         this.fileStorageLocation.put("eticket", eticket);
@@ -333,6 +336,29 @@ public class TransactionImpl implements TransactionService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Map<Object, Object> getEticketResponse(Long transactionId){
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        Long userId = (Long) attributes.getRequest().getAttribute("userId");
+        Optional<User> checkDBUser = userRepository.findById(userId);
+        if (!checkDBUser.isPresent()) {
+            log.info("User Not Found");
+            throw new EntityNotFoundException("User Not Found");
+        }
+        Optional<Transaction> checkDBTransaction = transactionRepository.findById(transactionId);
+        if (!checkDBTransaction.isPresent() || checkDBTransaction.get().getUser().getId() != checkDBUser.get().getId()) {
+            log.info("Unauthorized Access");
+            throw new EntityNotFoundException("Transaction Not Found");
+        }
+        List<ETicketDTO> eTicketDTOList = checkDBTransaction.get().getEtickets().stream()
+                .map(eTicket -> {
+                    ETicketDTO eticketDTO = eTicketRepository.getETicketDTO(eTicket.getTransactionDetail().getId());
+                    eticketDTO.setBookCode(eTicket.getBookCode());
+                    return eticketDTO;
+                }).collect(Collectors.toList());
+        return templateResponse.success(eTicketDTOList);
     }
 
     @Override

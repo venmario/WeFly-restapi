@@ -8,6 +8,7 @@ import java.time.LocalTime;
 
 @Data
 public class ETicketDTO {
+    private String bookCode;
     private LocalDate departureDate;
     private LocalDate arrivalDate;
     private String flightCode;

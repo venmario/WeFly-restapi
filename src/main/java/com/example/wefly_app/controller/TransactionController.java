@@ -120,6 +120,12 @@ public class TransactionController {
         return new ResponseEntity<>(reportService.getReport(page, size, orderBy, orderType, startDate, endDate, period), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping(value = {"/getETicketResponse/{transactionId}", "/getETicketResponse/{transactionId}/"})
+    public ResponseEntity<Map> getETicketResponseById(@PathVariable("transactionId") Long transactionId) {
+        return new ResponseEntity<>(transactionService.getEticketResponse(transactionId), HttpStatus.OK);
+    }
+
 //    @GetMapping(value = {"/listBank", "/listBank/"})
 //    public ResponseEntity<Map> getAllBank(@RequestParam(required = true, defaultValue = "0") int page,
 //                                       @RequestParam(required = true, defaultValue = "10") int size,
