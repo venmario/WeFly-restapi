@@ -18,8 +18,8 @@ import java.util.List;
 @Where(clause = "deleted_date is null")
 public class Transaction extends AbstractDate implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_seq")
-    @SequenceGenerator(name = "entity_seq", sequenceName = "ENTITY_SEQ", initialValue = 300, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_id_seq")
+    @SequenceGenerator(name = "transaction_id_seq", sequenceName = "TRANSACTION_ID_SEQ", initialValue = 322, allocationSize = 1)
     private Long id;
 
     private SeatClass seatClass;

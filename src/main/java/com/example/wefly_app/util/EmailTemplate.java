@@ -9,68 +9,61 @@ public class EmailTemplate {
                 "<html>\n" +
                 "<head>\n" +
                 "<style>\n" +
-                "\t.email-container {\n" +
-                "\t\tpadding-top: 10px;\n" +
-                "\t}\n" +
-                "\tp {\n" +
-                "\t\ttext-align: left;\n" +
-                "\t}\n" +
+                "    .email-container {\n" +
+                "        padding-top: 10px;\n" +
+                "    }\n" +
+                "    p {\n" +
+                "        text-align: left;\n" +
+                "    }\n" +
                 "\n" +
-                "\ta.btn {\n" +
-                "\t\tdisplay: block;\n" +
-                "\t\tmargin: 30px auto;\n" +
-                "\t\tbackground-color: #01c853;\n" +
-                "\t\tpadding: 10px 20px;\n" +
-                "\t\tcolor: #fff;\n" +
-                "\t\ttext-decoration: none;\n" +
-                "\t\twidth: 30%;\n" +
-                "\t\ttext-align: center;\n" +
-                "\t\tborder: 1px solid #01c853;\n" +
-                "\t\ttext-transform: uppercase;\n" +
-                "\t}\n" +
-                "\ta.btn:hover,\n" +
-                "\ta.btn:focus {\n" +
-                "\t\tcolor: #01c853;\n" +
-                "\t\tbackground-color: #fff;\n" +
-                "\t\tborder: 1px solid #01c853;\n" +
-                "\t}\n" +
-                "\t.user-name {\n" +
-                "\t\ttext-transform: uppercase;\n" +
-                "\t}\n" +
-                "\t.manual-link,\n" +
-                "\t.manual-link:hover,\n" +
-                "\t.manual-link:focus {\n" +
-                "\t\tdisplay: block;\n" +
-                "\t\tcolor: #396fad;\n" +
-                "\t\tfont-weight: bold;\n" +
-                "\t\tmargin-top: -15px;\n" +
-                "\t}\n" +
-                "\t.mt--15 {\n" +
-                "\t\tmargin-top: -15px;\n" +
-                "\t}\n" +
+                "    a.btn {\n" +
+                "        display: block;\n" +
+                "        margin: 30px auto;\n" +
+                "        background-color: #01c853;\n" +
+                "        padding: 10px 20px;\n" +
+                "        color: #fff;\n" +
+                "        text-decoration: none;\n" +
+                "        width: 30%;\n" +
+                "        text-align: center;\n" +
+                "        border: 1px solid #01c853;\n" +
+                "        text-transform: uppercase;\n" +
+                "    }\n" +
+                "    a.btn:hover,\n" +
+                "    a.btn:focus {\n" +
+                "        color: #01c853;\n" +
+                "        background-color: #fff;\n" +
+                "        border: 1px solid #01c853;\n" +
+                "    }\n" +
+                "    .user-name {\n" +
+                "        text-transform: uppercase;\n" +
+                "    }\n" +
+                "    .manual-link,\n" +
+                "    .manual-link:hover,\n" +
+                "    .manual-link:focus {\n" +
+                "        display: block;\n" +
+                "        color: #396fad;\n" +
+                "        font-weight: bold;\n" +
+                "        margin-top: 15px;\n" +
+                "    }\n" +
+                "    .mt--15 {\n" +
+                "        margin-top: 15px;\n" +
+                "    }\n" +
                 "</style>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "\t<div class=\"email-container\">\n" +
-                "\t\t<p>Halo <span class=\"user-name\">{{USERNAME}}</span> Selamat bergabung</p>\n" +
-                "\t\t<p>Harap konfirmasikan email kamu dengan memasukan kode dibawah ini</p>\n" +
-                "\t\t\n" +
-                "\t\tkode: <b>{{VERIFY_TOKEN}}</b>\n" +
-                "\t\t\n" +
-                "\t\t<p class=\"mt--15\">Jika kamu butuh bantuan atau pertanyaan, hubungi customer care kami di .... atau kirim email ke ....</p>\n" +
-                "\t\t\n" +
-                "\t\t<p>Semoga harimu menyenangkan!</p>\n" +
-                "\t\t\n" +
-                "\t\t<p>PT ABC,</p>\n" +
-                "\t\t<p class=\"mt--15\".....</p>\n" +
-                "\n" +
-                "\t\t\n" +
-                "\t</div>\n" +
+                "    <div class=\"email-container\">\n" +
+                "        <p>Hi! <span class=\"user-name\">{{USERNAME}}</span>, Welcome to WeFly</p>\n" +
+                "        <p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">To complete account registration please do email confirmation by clicking the <a href=\"{{CONFIRMATION_URL}}\" style=\"color:blue; text-decoration:underline;\"><b>LINK<b/></a> </p>\n" +
+                "        <p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">If this is not you, you can ignore this message.</p>\n" +
+                "<p></p>\n" +
+                "        <p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">Have A Nice Day!</p>\n" +
+                "        <p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\"><a href=\"{{HOMEPAGE_URL}}\" style=\"color:blue; text-decoration:underline;\"><b>WeFly</b></a></p>\n" +
+                "    </div>\n" +
                 "</body>\n" +
-                "</html>";
+                "</html>\n";
     }
 
-    public String getResetPassword(){
+    public String getResetPasswordOTP(){
 
         return "<!doctype html>\n" +
                 "<html lang=\"en-US\">\n" +
@@ -95,7 +88,7 @@ public class EmailTemplate {
                 "<tr>\n" +
                 "<td style=\"text-align:center;\">\n" +
                 "<a href=\"#\" title=\"logo\" target=\"_blank\">\n" +
-                "<img width=\"60\" src=\"https://drive.google.com/uc?export=view&id=1aRZ9CeAPCuiso0Cz0_28y0vSJ419CO3i\" title=\"logo\" alt=\"logo\">\n" +
+                "<img width=\"250\" src=\"https://lh3.googleusercontent.com/drive-viewer/AEYmBYTb_2Rd39mj2YVNilLT6puz8gia9I7kvH2CmUZBtXTI9xykpJeRRwg9CNRuME9_kmtCI9cq-s2vrdWMiJcuCiePfSZW=s2560\" title=\"logo\" alt=\"logo\">\n" +
                 "</a>\n" +
                 "</td>\n" +
                 "</tr>\n" +
@@ -118,7 +111,13 @@ public class EmailTemplate {
                 "Please use the verification code below to reset your password : <br/> </p>" +
                 "<strong style=\"font-size:24px;\">{{PASS_TOKEN}}</strong> <br/>\n" +
                 "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
-                "If this action wasn’t done by you, please contact us on <b>andikatirtax@gmail.com</b>. But if it’s you, you can ignore this message. </p>" +
+                "If this action wasn’t done by you can ignore this message. </p>" +
+                "<p></p>\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "Have A Nice Day!,\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "<a href=\"{{HOMEPAGE_URL}}\" style=\"color:blue; text-decoration:underline;\"><b>WeFly</b></a>\n" +
+                "</p>\n" +
                 "</td>\n"+
                 "</tr>\n"+
                 "<tr>\n" +
@@ -143,6 +142,166 @@ public class EmailTemplate {
                 "</body>\n" +
                 "</html>\n";
     }
+
+    public String getPaymentProofTemplate(){
+        return  "<!doctype html>\n" +
+                "<html lang=\"en-US\">\n" +
+                "<head>\n" +
+                "<meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" />\n" +
+                "<title>Payment Proof Email</title>\n" +
+                "<meta name=\"description\" content=\"Payment Proof Email\"> \n" +
+                "<style type=\"text/css\"> \n" +
+                "a:hover {text-decoration: underline !important;}\n" +
+                "</style> \n" +
+                "</head>\n" +
+                "<body marginheight=\"0\" topmargin=\"0\" marginwidth=\"0\" style=\"margin: 0px; background-color: #f2f3f8;\" leftmargin=\"0\">\n" +
+                "<table cellspacing=\"0\" border=\"0\" cellpadding=\"0\" width=\"100%\" bgcolor=\"#f2f3f8\"\n" +
+                "style=\"@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;\">\n" +
+                "<tr>\n" +
+                "<td>\n" +
+                "<table style=\"background-color: #f2f3f8; max-width:670px; margin:0 auto;\" width=\"100%\" border=\"0\"\n" +
+                "align=\"center\" cellpadding=\"0\" cellspacing=\"0\">\n" +
+                "<tr>\n" +
+                "<td style=\"height:80px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"text-align:center;\">\n" +
+                "<a href=\"#\" title=\"logo\" target=\"_blank\">\n" +
+                "<img width=\"250\" src=\"https://lh3.googleusercontent.com/drive-viewer/AEYmBYTb_2Rd39mj2YVNilLT6puz8gia9I7kvH2CmUZBtXTI9xykpJeRRwg9CNRuME9_kmtCI9cq-s2vrdWMiJcuCiePfSZW=s2560\" title=\"logo\" alt=\"logo\">\n" +
+                "</a>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"height:20px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td>\n" +
+                "<table width=\"95%\" border=\"0\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\"\n" +
+                "style=\"max-width:670px;background:#fff; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);\">\n" +
+                "<tr>\n" +
+                "<td style=\"height:40px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"padding:0 35px;\">\n" +
+                "<h1 style=\"color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;\">Hi, {{USERNAME}}</h1>\n" +
+                "<span style=\"display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;\"></span>\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "{{MESSAGE}}<br/> </p>\n" +
+                "<p></p>\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "{{THANK_MESSAGE}},\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "<a href=\"{{HOMEPAGE_URL}}\" style=\"color:blue; text-decoration:underline;\"><b>WeFly</b></a>\n" +
+                "</p>\n" +
+                "<p></p>\n" +
+                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+                "<b>\"Elevating The Skies With Flight Excellence!\"</b> </p>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"height:40px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"height:20px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"text-align:center;\">\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr>\n" +
+                "<td style=\"height:80px;\">&nbsp;</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</body>\n" +
+                "</html>\n"
+                ;
+    }
+
+//    public String getBoardingPass() {
+//        return "<!doctype html>\n" +
+//                "<html lang=\"en-US\">\n" +
+//                "<head>\n" +
+//                "<meta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" />\n" +
+//                "<title>Payment Proof Email</title>\n" +
+//                "<meta name=\"description\" content=\"Payment Proof Email\"> \n" +
+//                "<style type=\"text/css\"> \n" +
+//                "a:hover {text-decoration: underline !important;}\n" +
+//                "</style> \n" +
+//                "</head>\n" +
+//                "<body marginheight=\"0\" topmargin=\"0\" marginwidth=\"0\" style=\"margin: 0px; background-color: #f2f3f8;\" leftmargin=\"0\">\n" +
+//                "<table cellspacing=\"0\" border=\"0\" cellpadding=\"0\" width=\"100%\" bgcolor=\"#f2f3f8\"\n" +
+//                "style=\"@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;\">\n" +
+//                "<tr>\n" +
+//                "<td>\n" +
+//                "<table style=\"background-color: #f2f3f8; max-width:670px; margin:0 auto;\" width=\"100%\" border=\"0\"\n" +
+//                "align=\"center\" cellpadding=\"0\" cellspacing=\"0\">\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:80px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"text-align:center;\">\n" +
+//                "<a href=\"#\" title=\"logo\" target=\"_blank\">\n" +
+//                "<img width=\"250\" src=\"https://lh3.googleusercontent.com/drive-viewer/AEYmBYTb_2Rd39mj2YVNilLT6puz8gia9I7kvH2CmUZBtXTI9xykpJeRRwg9CNRuME9_kmtCI9cq-s2vrdWMiJcuCiePfSZW=s2560\" title=\"logo\" alt=\"logo\">\n" +
+//                "</a>\n" +
+//                "</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:20px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td>\n" +
+//                "<table width=\"95%\" border=\"0\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\"\n" +
+//                "style=\"max-width:670px;background:#fff; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);\">\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:40px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"padding:0 35px;\">\n" +
+//                "<h1 style=\"color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;\">Hi, {{USERNAME}}</h1>\n" +
+//                "<span style=\"display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;\"></span>\n" +
+//                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+//                "Here we attached your boarding pass for all the passengers. Thank you for using our services, it is a pleasure to serve you. Enjoy your flight, hope you reach your destination safely. <br/> </p>\n" +
+//                "<p></p>\n" +
+//                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+//                "Best Regards,\n" +
+//                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+//                "<a href=\"{{HOMEPAGE_URL}}\" style=\"color:#455056; text-decoration:none;\">WeFly</a>\n" +
+//                "</p>\n" +
+//                "<p></p>\n" +
+//                "<p style=\"color:#455056; font-size:15px;line-height:24px; margin:0;\">\n" +
+//                "<b>\"Elevating The Skies With Flight Excellence!\"</b> </p>\n" +
+//                "</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:40px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "</table>\n" +
+//                "</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:20px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"text-align:center;\">\n" +
+//                "</td>\n" +
+//                "</tr>\n" +
+//                "<tr>\n" +
+//                "<td style=\"height:80px;\">&nbsp;</td>\n" +
+//                "</tr>\n" +
+//                "</table>\n" +
+//                "</td>\n" +
+//                "</tr>\n" +
+//                "</table>\n" +
+//                "</body>\n" +
+//                "</html>\n"
+//                ;
+//    }
 
 }
 

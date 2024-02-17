@@ -10,6 +10,7 @@ import com.example.wefly_app.service.FlightService;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,21 +64,20 @@ public class FlightServiceImpl implements FlightService {
             log.info("Save New Flight");
             Optional<Airport> checkDataDBDepartureAirport = airportRepository.findById(request.getDepartureAirportId());
             Optional<Airport> checkDataDBArrivalAirport = airportRepository.findById(request.getArrivalAirportId());
-            Optional<Airline> checkDataDBAirline = airlineRepository.findById(request.getAirlineId());
             Optional<Airplane> checkDataDBAirplane = airplaneRepository.findById(request.getAirplaneId());
             String missingEntities = Stream.of(
-                    !checkDataDBAirline.isPresent() ? "Airline with id " + request.getAirplaneId() : null,
                     !checkDataDBAirplane.isPresent() ? "Airplane with id " + request.getAirplaneId() : null,
                     !checkDataDBArrivalAirport.isPresent() ? "Arrival Airport with id " + request.getArrivalAirportId() : null,
                     !checkDataDBDepartureAirport.isPresent() ? "Departure Airport with id " + request.getDepartureAirportId() : null
             ).filter(Objects::nonNull).collect(Collectors.joining(","));
             if (!missingEntities.isEmpty()) throw new EntityNotFoundException(missingEntities + " not found");
-            if (checkDataDBAirplane.get().getAirline().getId() != checkDataDBAirline.get().getId()) {
+            Airline checkDataAirline = checkDataDBAirplane.get().getAirline();
+            if (checkDataAirline.getId() != request.getAirlineId()) {
                 throw new IllegalArgumentException("Airplane with id " + request.getAirplaneId() + " not belong to Airline with id " + request.getAirlineId());
             }
-            Long count = flightRepository.countByAirlineId(checkDataDBAirline.get().getId());
+            Long count = flightRepository.countByAirlineId(checkDataAirline.getId());
             Flight flight = new Flight();
-            flight.setFlightCode(checkDataDBAirline.get().getCode() + "-" + (count + 1));
+            flight.setFlightCode(checkDataAirline.getCode() + "-" + (count + 1));
             flight.setDepartureTime(request.getDepartureTime());
             flight.setArrivalTime(request.getArrivalTime());
             flight.setDepartureAirport(checkDataDBDepartureAirport.get());
@@ -91,7 +91,7 @@ public class FlightServiceImpl implements FlightService {
             flight.setScheduleFriday(request.isScheduleFriday());
             flight.setScheduleSaturday(request.isScheduleSaturday());
             flight.setScheduleSunday(request.isScheduleSunday());
-            flight.setAirline(checkDataDBAirline.get());
+            flight.setAirline(checkDataAirline);
             flight.setFlightSchedules(flightSchedules(flight, 3));
             log.info("Flight Saved");
             flightRepository.save(flight);
@@ -138,20 +138,22 @@ public class FlightServiceImpl implements FlightService {
 
     public List<SeatAvailability> seatAvailabilities (List<SeatConfig> seatConfigs, FlightSchedule flightSchedule){
         List<SeatAvailability> seatAvailabilities = new ArrayList<>();
+        int rowNumber = 1;
         for (SeatConfig seatConfig : seatConfigs) {
-            char rowLetter = 'A';
-            for (int i = 0; i < seatConfig.getSeatRow(); i++) {
-                rowLetter = (char) (rowLetter + i);
-                for (int j = 1; j <= seatConfig.getSeatColumn(); j++) {
+            char columnLetter = 'A';
+            for (int i = 0; i < seatConfig.getSeatColumn(); i++) {
+                columnLetter = (char) (columnLetter + i);
+                for (int j = 0; j < seatConfig.getSeatRow(); j++) {
                     SeatAvailability seatAvailability = new SeatAvailability();
                     seatAvailability.setSeatConfig(seatConfig);
-                    seatAvailability.setSeatRow(String.valueOf(rowLetter));
-                    seatAvailability.setSeatColumn(String.valueOf(j));
+                    seatAvailability.setSeatRow(String.valueOf(rowNumber + j));
+                    seatAvailability.setSeatColumn(String.valueOf(columnLetter));
                     seatAvailability.setFlightSchedule(flightSchedule);
                     seatAvailability.setSeatClass(seatConfig.getSeatClass());
                     seatAvailabilities.add(seatAvailability);
                 }
             }
+            rowNumber += seatConfig.getSeatRow();
         }
 
         return seatAvailabilities;
@@ -300,6 +302,65 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    public Map<Object, Object> getAllDtoAndroid(int page, int size, String orderBy, String orderType, Long departureAirportId,
+                                      Long arrivalAirportId, Long airLineId, String departureDate,
+                                      String departureTime, String arrivalTime, Integer numberOfPassengers,
+                                      String seatClass) {
+        try {
+            log.info("Get All Flights");
+            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
+            Specification<FlightClass> specification = ((root, query, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate depart = LocalDate.parse(departureDate, formatter);
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("departureDate"), depart));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("departureAirport").get("id"), departureAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("arrivalAirport").get("id"), arrivalAirportId));
+                predicates.add(criteriaBuilder.equal(root.get("seatClass"), SeatClass.valueOf(seatClass)));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("availableSeat"), numberOfPassengers));
+                if (airLineId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("flightSchedule").get("flight").get("airline").get("id"), airLineId));
+                }
+                if (departureTime != null && !departureTime.isEmpty() && arrivalTime != null && !arrivalTime.isEmpty()) {
+                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                    LocalTime departureTimeFormat = LocalTime.parse(departureTime, timeFormatter);
+                    LocalTime arrivalTimeFormat = LocalTime.parse(arrivalTime, timeFormatter);
+                    predicates.add(criteriaBuilder.between(root.get("flightSchedule").get("flight").
+                            get("departureTime"), departureTimeFormat, arrivalTimeFormat));
+                }
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            });
+
+            Page<FlightClass> list = flightClassRepository.findAll(specification, pageable);
+            Page<com.example.wefly_app.request.android.FlightClass> dtoPage = list.map(this::convertAndroidDTO);
+            log.info("Flights Found");
+            return templateResponse.success(dtoPage);
+        } catch (Exception e) {
+            log.error("Error Getting All Flights", e);
+            throw e;
+        }
+    }
+
+    public com.example.wefly_app.request.android.FlightClass convertAndroidDTO(FlightClass request) {
+        log.info("Mapping to DTO for android");
+        Flight flight = request.getFlightSchedule().getFlight();
+        ModelMapper modelMapper = new ModelMapper();
+        com.example.wefly_app.request.android.FlightClass dto = modelMapper.map(request, com.example.wefly_app.request.android.FlightClass.class);
+        com.example.wefly_app.request.android.Flight flightDto = modelMapper.map(flight, com.example.wefly_app.request.android.Flight.class);
+        com.example.wefly_app.request.android.Airplane airplaneDto = modelMapper.map(flight.getAirplane(), com.example.wefly_app.request.android.Airplane.class);
+
+        airplaneDto.setName(flight.getAirplane().getCode());
+        flightDto.setFlightNumber(flight.getFlightCode());
+        flightDto.setAirplane(airplaneDto);
+        flightDto.setDepartureDate(request.getFlightSchedule().getDepartureDate());
+        flightDto.setArrivalDate(request.getFlightSchedule().getArrivalDate());
+        dto.setFlight(flightDto);
+
+        log.info("Mapping DTO for Android Success");
+        return dto;
+    }
+
+    @Override
     public Map<Object, Object> getById(Long id) {
         try {
             log.info("Get Flight By Id");
@@ -312,28 +373,4 @@ public class FlightServiceImpl implements FlightService {
             throw e;
         }
     }
-
-//    private List<FlightClass> setFlightClass (Airplane airplane, Flight flight, BigDecimal basePrice) {
-//        return airplane.getSeats().stream()
-//                .map(seatClass -> {
-//                    FlightClass flightClass = new FlightClass();
-//                    flightClass.setFlight(flight);
-//                    flightClass.setSeatClass(seatClass.getSeatClass());
-//                    BigDecimal multiplier = BigDecimal.valueOf(1);
-//                    if (seatClass.getSeatClass().equals(SeatClass.BUSINESS)) {
-//                        multiplier = airplane.getAirline().getBusinessMultiplier();
-//                    }
-//                    flightClass.setBasePriceAdult(basePrice.multiply(multiplier));
-//                    flightClass.setBasePriceChild(basePrice.multiply(multiplier).
-//                            multiply(airplane.getAirline().getDiscountChild().
-//                                    multiply(BigDecimal.valueOf(0.01)))
-//                    );
-//                    flightClass.setBasePriceInfant(basePrice.multiply(multiplier).
-//                            multiply(airplane.getAirline().getDiscountInfant().
-//                                    multiply(BigDecimal.valueOf(0.01)))
-//                    );
-//                    flightClass.setAvailableSeat(seatClass.getSeatRow() * seatClass.getSeatColumn());
-//                    return flightClass;
-//                }).collect(Collectors.toList());
-//    }
 }

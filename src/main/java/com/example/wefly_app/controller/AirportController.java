@@ -59,5 +59,18 @@ public class AirportController {
                 icao, province), HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/listDropDown", "/listDropDown/"})
+    public ResponseEntity<Map> getAllDropDown(@RequestParam(required = false, defaultValue = "name") String orderBy,
+                                      @RequestParam(required = false, defaultValue = "ASC") String orderType,
+                                      @RequestParam(required = false) String name,
+                                      @RequestParam(required = false) String city,
+                                      @RequestParam(required = false) String country,
+                                      @RequestParam(required = false) String iata,
+                                      @RequestParam(required = false) String icao,
+                                      @RequestParam(required = false) String province) {
+        return new ResponseEntity<>(airportService.getAllDropDown(orderBy, orderType, name, city, country, iata,
+                icao, province), HttpStatus.OK);
+    }
+
 
 }

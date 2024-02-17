@@ -15,5 +15,9 @@ public interface FlightService {
                                Long arrivalAirportId, Long airLineId, String departureDate,
                                String departureTime, String arrivalTime, Integer numberOfPassengers,
                                String seatClass);
+    Map<Object, Object> getAllDtoAndroid(int page, int size, String orderBy, String orderType, Long departureAirportId,
+                               Long arrivalAirportId, Long airLineId, String departureDate,
+                               String departureTime, String arrivalTime, Integer numberOfPassengers,
+                               String seatClass);
     Map<Object, Object> getById(Long id);
 }

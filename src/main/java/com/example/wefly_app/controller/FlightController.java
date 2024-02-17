@@ -61,4 +61,22 @@ public class FlightController {
                 arrivalAirportId, airLineId, departDate, departureTime, arrivalTime, numberOfPassengers
         ,seatClass), HttpStatus.OK);
     }
+
+    @GetMapping(value = {"/listAndroid", "/listAndroid/"})
+    public ResponseEntity<Map> getAllDtoAndroid(@RequestParam(required = true, defaultValue = "0") int page,
+                                      @RequestParam(required = true, defaultValue = "10") int size,
+                                      @RequestParam(required = false, defaultValue = "basePriceAdult") String orderBy,
+                                      @RequestParam(required = false, defaultValue = "ascending") String orderType,
+                                      @RequestParam(required = true) Long departureAirportId,
+                                      @RequestParam(required = true) Long arrivalAirportId,
+                                      @RequestParam(required = false) Long airLineId,
+                                      @RequestParam(required = true) String departDate,
+                                      @RequestParam(required = false) String departureTime,
+                                      @RequestParam(required = false) String arrivalTime,
+                                      @RequestParam(required = true, defaultValue = "1") Integer numberOfPassengers,
+                                      @RequestParam(required = true, defaultValue = "ECONOMY") String seatClass) {
+        return new ResponseEntity<>(flightService.getAllDtoAndroid(page, size, orderBy, orderType, departureAirportId,
+                arrivalAirportId, airLineId, departDate, departureTime, arrivalTime, numberOfPassengers
+                ,seatClass), HttpStatus.OK);
+    }
 }

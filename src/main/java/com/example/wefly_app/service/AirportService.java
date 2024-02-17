@@ -14,4 +14,7 @@ public interface AirportService {
     Map<Object, Object> getAll(int page, int size, String orderBy, String orderType,
                                String name, String city, String country,
                                String iata, String icao, String province);
+    Map<Object, Object> getAllDropDown(String orderBy, String orderType,
+                                       String name, String city, String country,
+                                       String iata, String icao, String province);
 }

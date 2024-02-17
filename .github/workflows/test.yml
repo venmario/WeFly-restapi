@@ -3,6 +3,7 @@ name: Java CI/CD Pipeline
 on:
   push:
     branches:
+      - development
       - main
 
 jobs:
@@ -17,6 +18,12 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Build with Maven
+        env:
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          SB_MIDTRANS_SERVER_KEY: ${{ secrets.SB_MIDTRANS_SERVER_KEY }}
+          PROD_MAIL_PASSWORD: ${{ secrets.PROD_MAIL_PASSWORD }}
         run: mvn clean package
       - name: Upload JAR file
         uses: actions/upload-artifact@v2
@@ -47,6 +54,22 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
           scp -i private_key ./target/WeFly_App_Final_Project.jar root@${{ secrets.SERVER_IP }}:/root/synrgy
+      - name: Create and Transfer Environment Variables File
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          SB_MIDTRANS_SERVER_KEY: ${{ secrets.SB_MIDTRANS_SERVER_KEY }}
+          PROD_MAIL_PASSWORD: ${{ secrets.PROD_MAIL_PASSWORD }}
+        run: |
+          echo "PROD_DB_USERNAME=${PROD_DB_USERNAME}" > wefly.env
+          echo "PROD_DB_PASSWORD=${PROD_DB_PASSWORD}" >> wefly.env
+          echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" >> wefly.env
+          echo "SB_MIDTRANS_SERVER_KEY=${SB_MIDTRANS_SERVER_KEY}" >> wefly.env
+          echo "PROD_MAIL_PASSWORD=${PROD_MAIL_PASSWORD}" >> wefly.env
+          scp -i private_key wefly.env root@${{ secrets.SERVER_IP }}:/root/synrgy/wefly.env
       - name: Execute deploy script
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
