@@ -126,7 +126,7 @@ public class CheckInServiceImpl implements CheckinService {
                 throw new EntityNotFoundException("ETicket Not Found");
             }
             log.info("Match Orderer Data");
-            if (!request.getOrdererLastName().equals(eticket.getTransaction().getOrderer().getLastName())){
+            if (!request.getOrdererLastName().equalsIgnoreCase(eticket.getTransaction().getOrderer().getLastName())){
                 throw new EntityNotFoundException("Orderer Not Found");
             } else {
                 log.info("Generate Boarding Pass");
