@@ -86,13 +86,11 @@ public class UserServiceImpl implements UserService {
             if (checkUser == null) {
                 throw new IncorrectUserCredentialException("Login credential don't match an account in our system");
             }
-            if (encoder.matches(loginModel.getPassword(), checkUser.getPassword())) {
-                if (!checkUser.isEnabled()) {
-                    throw new UserDisabledException("User is disabled, please check your email to activate your account");
-                }
-            }
             if (!(encoder.matches(loginModel.getPassword(), checkUser.getPassword()))) {
                 throw new IncorrectUserCredentialException("Login credential don't match an account in our system");
+            }
+            if (!checkUser.isEnabled()) {
+                throw new UserDisabledException("User is disabled, please check your email to activate your account");
             }
             checkUser.setProvider(Provider.LOCAL);
             userRepository.save(checkUser);
