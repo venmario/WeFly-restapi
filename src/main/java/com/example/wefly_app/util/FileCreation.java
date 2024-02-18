@@ -59,7 +59,7 @@ public class FileCreation {
             table.setWidth(UnitValue.createPercentValue(100)); // Set table width to 100% of the page width
 
 // First cell with content aligned to the left
-            Cell leftCell = new Cell().add(new Paragraph("Invoice" +
+            Cell leftCell = new Cell().add(new Paragraph("Payment Proof" +
                             "\n" + "Order Id: " + invoiceDTO.getId())
                             .setFontSize(14))
                     .setVerticalAlignment(VerticalAlignment.MIDDLE)
