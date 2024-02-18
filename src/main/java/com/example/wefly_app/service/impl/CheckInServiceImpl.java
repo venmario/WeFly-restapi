@@ -120,7 +120,7 @@ public class CheckInServiceImpl implements CheckinService {
     @Override
     public Map<Object, Object> checkIn(CheckinRequestModel request) {
         try {
-            ETicket eticket = eticketRepository.getETicketByBookCode(request.getBookingCode());
+            ETicket eticket = eticketRepository.getETicketByBookCode(request.getBookingCode().toUpperCase());
             log.info("Check ETicket Data");
             if (eticket == null) {
                 throw new EntityNotFoundException("ETicket Not Found");
