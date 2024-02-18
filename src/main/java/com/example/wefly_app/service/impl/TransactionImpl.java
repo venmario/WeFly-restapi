@@ -8,6 +8,7 @@ import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.TransactionService;
+import com.example.wefly_app.service.quartz.QuartzJobService;
 import com.example.wefly_app.util.*;
 import com.example.wefly_app.util.exception.FileHandlingException;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
@@ -74,6 +75,7 @@ public class TransactionImpl implements TransactionService {
     private final String homePageUrl;
     private final ETicketRepository eTicketRepository;
     private final FileCreation fileCreation;
+    private final QuartzJobService quartzJobService;
 
     @Autowired
     public TransactionImpl (@Value("${midtrans.server-key}") String serverKey,
@@ -82,7 +84,8 @@ public class TransactionImpl implements TransactionService {
                             SimpleStringUtils simpleStringUtils, PaymentRepository paymentRepository,
                             FileStorageProperties fileStorageProperties, EmailTemplate emailTemplate,
                             EmailSender emailSender, ETicketRepository eTicketRepository,
-                            @Value("${frontend.homepage.url}") String homePageUrl, FileCreation fileCreation) {
+                            @Value("${frontend.homepage.url}") String homePageUrl, FileCreation fileCreation,
+                            QuartzJobService quartzJobService) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -94,6 +97,7 @@ public class TransactionImpl implements TransactionService {
         this.emailSender = emailSender;
         this.homePageUrl = homePageUrl;
         this.eTicketRepository = eTicketRepository;
+        this.quartzJobService = quartzJobService;
         this.fileCreation = fileCreation;
         Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
         Path paymenProof = Paths.get(fileStorageProperties.getPaymentProofDir()).toAbsolutePath().normalize();
@@ -177,11 +181,14 @@ public class TransactionImpl implements TransactionService {
             transaction.setPassengers(passengers);
             transaction.setPayment(new Payment());
             Transaction transactionSaved = transactionRepository.save(transaction);
+
             Map<String, Object> response = midtransRequest(transaction);
             Payment payment = transactionSaved.getPayment();
             payment.setToken((String) response.get("token"));
             payment.setExpiryTime(LocalDateTime.now().plusHours(1));
             paymentRepository.save(payment);
+
+            quartzJobService.schedulePaymentExpire(transactionSaved.getId());
             response.put("transaction", transactionSaved);
             log.info("save transaction success, proceed to payment");
             return templateResponse.success(response);
@@ -296,7 +303,7 @@ public class TransactionImpl implements TransactionService {
                 payment = generatePaymentProof(payment);
                 saveETicket(payment.getTransaction());
                 sendEmailPaymentProofAndETicket(payment.getTransaction());
-            } else if (request.getTransactionStatus().matches("expire")) {
+            } else if (request.getTransactionStatus().matches("(?i)expire")) {
                 log.info("Reverting flight class seat available");
                 int totalSeatBooked = checkDataDBTransaction.get().getAdultPassenger()
                         + checkDataDBTransaction.get().getChildPassenger();
@@ -310,6 +317,7 @@ public class TransactionImpl implements TransactionService {
                 payment.setTransactionStatus(request.getTransactionStatus());
             } else {
                 payment.setTransactionStatus(request.getTransactionStatus());
+                quartzJobService.cancelJob(checkDataDBTransaction.get().getId());
             }
             log.info("midtrans response update success");
             return templateResponse.success(paymentRepository.save(payment));

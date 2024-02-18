@@ -1,11 +1,8 @@
 package com.example.wefly_app.service;
 
-import com.example.wefly_app.entity.Transaction;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
-import com.example.wefly_app.request.transaction.PaymentRegisterModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,5 +18,4 @@ public interface TransactionService {
     Resource getPaymentProof (Long transactionId);
     Map<Object, Object> getEticketResponse(Long transactionId);
     Resource getETicket(Long transactionId);
-
 }
