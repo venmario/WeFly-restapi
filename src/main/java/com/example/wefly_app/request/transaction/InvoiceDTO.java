@@ -11,6 +11,7 @@ import java.util.Map;
 
 @Data
 public class InvoiceDTO {
+    private Long id;
     private List<TransactionDetail> transactionDetails;
     private Payment payment;
     private Orderer orderer;

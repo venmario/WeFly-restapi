@@ -2,39 +2,24 @@ package com.example.wefly_app.service.impl;
 
 import com.example.wefly_app.entity.*;
 import com.example.wefly_app.repository.*;
-import com.example.wefly_app.request.checkin.ETicketDTO;
+import com.example.wefly_app.request.transaction.ETicketDTO;
 import com.example.wefly_app.request.transaction.InvoiceDTO;
 import com.example.wefly_app.request.transaction.MidtransRequestModel;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
-import com.example.wefly_app.service.CheckinService;
 import com.example.wefly_app.service.TransactionService;
 import com.example.wefly_app.util.*;
-import com.example.wefly_app.util.exception.FileStorageException;
+import com.example.wefly_app.util.exception.FileHandlingException;
 import com.example.wefly_app.util.exception.IncorrectUserCredentialException;
 import com.example.wefly_app.util.exception.ValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.kernel.colors.Color;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.borders.SolidBorder;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.HorizontalAlignment;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.layout.properties.VerticalAlignment;
+import com.itextpdf.layout.element.AreaBreak;
+import com.itextpdf.layout.properties.AreaBreakType;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +42,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -65,12 +51,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -86,21 +69,20 @@ public class TransactionImpl implements TransactionService {
     public final TemplateResponse templateResponse;
     public final SimpleStringUtils simpleStringUtils;
     public final PaymentRepository paymentRepository;
-    private final CheckinService checkinService;
     private final EmailTemplate emailTemplate;
     private final EmailSender emailSender;
     private final String homePageUrl;
     private final ETicketRepository eTicketRepository;
-
+    private final FileCreation fileCreation;
 
     @Autowired
     public TransactionImpl (@Value("${midtrans.server-key}") String serverKey,
                             TransactionRepository transactionRepository, UserRepository userRepository,
                             FlightClassRepository flightClassRepository, TemplateResponse templateResponse,
                             SimpleStringUtils simpleStringUtils, PaymentRepository paymentRepository,
-                            FileStorageProperties fileStorageProperties, CheckinService checkinService,
-                            EmailTemplate emailTemplate, EmailSender emailSender, ETicketRepository eTicketRepository,
-                            @Value("${frontend.homepage.url}") String homePageUrl) {
+                            FileStorageProperties fileStorageProperties, EmailTemplate emailTemplate,
+                            EmailSender emailSender, ETicketRepository eTicketRepository,
+                            @Value("${frontend.homepage.url}") String homePageUrl, FileCreation fileCreation) {
         this.serverKey = serverKey;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
@@ -108,11 +90,11 @@ public class TransactionImpl implements TransactionService {
         this.templateResponse = templateResponse;
         this.simpleStringUtils = simpleStringUtils;
         this.paymentRepository = paymentRepository;
-        this.checkinService = checkinService;
         this.emailTemplate = emailTemplate;
         this.emailSender = emailSender;
         this.homePageUrl = homePageUrl;
         this.eTicketRepository = eTicketRepository;
+        this.fileCreation = fileCreation;
         Path eticket = Paths.get(fileStorageProperties.getETicketDir()).toAbsolutePath().normalize();
         Path paymenProof = Paths.get(fileStorageProperties.getPaymentProofDir()).toAbsolutePath().normalize();
         this.fileStorageLocation.put("eticket", eticket);
@@ -121,7 +103,7 @@ public class TransactionImpl implements TransactionService {
             Files.createDirectories(eticket);
             Files.createDirectories(paymenProof);
         } catch (Exception ex) {
-            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
+            throw new FileHandlingException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
 
@@ -312,7 +294,7 @@ public class TransactionImpl implements TransactionService {
             if (request.getTransactionStatus().matches("settlement|capture")) {
                 payment.setTransactionStatus("PAID");
                 payment = generatePaymentProof(payment);
-                checkinService.saveETicket(payment.getTransaction());
+                saveETicket(payment.getTransaction());
                 sendEmailPaymentProofAndETicket(payment.getTransaction());
             } else if (request.getTransactionStatus().matches("expire")) {
                 log.info("Reverting flight class seat available");
@@ -378,14 +360,14 @@ public class TransactionImpl implements TransactionService {
                 throw new ValidationException("transaction not found");
             Path filePath = this.fileStorageLocation.get("paymentProof").resolve(checkDataDBTransaction.get().getPayment().getInvoice()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-            if (!resource.exists()) throw new FileStorageException("File not found " + filePath);
+            if (!resource.exists()) throw new FileHandlingException("Payment Proof File not found " + filePath);
             else {
                 log.info("get invoice succeed");
                 return resource;
             }
         } catch (MalformedURLException ex) {
             log.error("get payment proof error ", ex);
-            throw new FileStorageException("File not found ", ex);
+            throw new FileHandlingException("Payment Proof File Path not found ", ex);
         }
 
     }
@@ -526,195 +508,37 @@ public class TransactionImpl implements TransactionService {
 
     @Transactional
     public Payment generatePaymentProof(Payment request) throws IOException {
-        log.info("generate invoice");
+        log.info("generate payment proof");
         Transaction transaction = request.getTransaction();
         String fileName = "Payment Proof-" + transaction.getId() + ".pdf";
         String path = "payment-proof/" + fileName;
         PdfWriter writer = new PdfWriter(path);
         PdfDocument pdf = new PdfDocument(writer);
+        InvoiceDTO invoiceDTO = getInvoiceDTO(transaction);
         try (Document document = new Document(pdf, PageSize.A4)) {
-            InvoiceDTO invoiceDTO = getInvoiceDTO(transaction);
-            ImageData imageData = ImageDataFactory.create("properties/logo.png");
-            Image image = new Image(imageData).setHeight(80).setWidth(80)
-                    .setHorizontalAlignment(HorizontalAlignment.RIGHT);
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy - HH:mm");
-            PdfFont regularFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-
-            Table table = new Table(new float[]{1, 1});
-            table.setWidth(UnitValue.createPercentValue(100)); // Set table width to 100% of the page width
-
-// First cell with content aligned to the left
-            Cell leftCell = new Cell().add(new Paragraph("Invoice" +
-                            "\n" + "Order Id: " + transaction.getId())
-                            .setFontSize(14))
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.LEFT);
-
-// Second cell with content aligned to the right
-            Cell rightCell = new Cell().add(image)
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT);
-            table.addCell(leftCell);
-            table.addCell(rightCell);
-            document.add(table);
-            document.add(new LineSeparator(new SolidLine()));
-
-            document.add(new Paragraph("Orderer Detail")
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setFontSize(12));
-
-            // Create a table with three columns
-            Table table1 = new Table(new float[]{1, 2, 1}); // Adjust column ratios as needed
-            table1.setWidth(UnitValue.createPercentValue(80)); // Set table width of the page width
-
-// Define custom border for cells
-            Border solidBorder = new SolidBorder(0.3f);
-            Color greyColor = new DeviceRgb(165, 165, 165);
-            table1.setBorder(solidBorder);
-
-// First cell: "Nama Lengkap"
-            Cell cell1 = new Cell().add(new Paragraph("Full Name").setFontColor(greyColor))
-                    .setBorder(Border.NO_BORDER);
-            cell1.add(new Paragraph(invoiceDTO.getOrderer().getFirstName() + " " + invoiceDTO.getOrderer().getLastName()));
-            table1.addCell(cell1);
-
-// Second cell: "Email"
-            Cell cell2 = new Cell().add(new Paragraph("Email").setFontColor(greyColor))
-                    .setBorder(Border.NO_BORDER);
-            cell2.add(new Paragraph(invoiceDTO.getOrderer().getEmail()));
-            table1.addCell(cell2);
-
-// Third cell: "Nomor Ponsel"
-            Cell cell3 = new Cell().add(new Paragraph("Phone Number").setFontColor(greyColor))
-                    .setBorder(Border.NO_BORDER);
-            cell3.add(new Paragraph(invoiceDTO.getOrderer().getPhoneNumber()));
-            table1.addCell(cell3);
-
-// Add the table to the document
-            document.add(table1);
-
-            document.add(new Paragraph("Transaction Detail")
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setFontSize(12));
-
-            // Payment and Method Table
-            Table paymentMethodTable = new Table(new float[]{1, 1});
-            paymentMethodTable.setWidth(UnitValue.createPercentValue(100));
-
-// Payment Time
-            Cell paymentTimeCell = new Cell().add(new Paragraph("Waktu Pembayaran: \n" + invoiceDTO
-                            .getPayment().getSettlementTime().format(formatter)).setFont(regularFont))
-                    .setBorder(Border.NO_BORDER);
-            paymentMethodTable.addCell(paymentTimeCell);
-
-// Payment Method
-            Cell paymentMethodCell = new Cell().add(new Paragraph("Metode Pembayaran: \nVirtual Account BCA").setFont(regularFont))
-                    .setBorder(Border.NO_BORDER);
-            paymentMethodTable.addCell(paymentMethodCell);
-
-            document.add(paymentMethodTable);
-            document.add(new Paragraph(""));
-
-// Line separator
-            document.add(new LineSeparator(new SolidLine()));
-
-// Product Table
-            Table productTable = new Table(5);
-
-// Headers
-            productTable.addHeaderCell(new Cell().add(new Paragraph("No.").setFont(boldFont)).setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT).setWidth(30));
-            productTable.addHeaderCell(new Cell().add(new Paragraph("Produk").setFont(boldFont)).setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT).setWidth(80));
-            productTable.addHeaderCell(new Cell().add(new Paragraph("Deskripsi").setFont(boldFont)).setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT).setWidth(200));
-            productTable.addHeaderCell(new Cell().add(new Paragraph("Jumlah").setFont(boldFont)).setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT).setWidth(50));
-            productTable.addHeaderCell(new Cell().add(new Paragraph("Total").setFont(boldFont)).setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT).setWidth(140));
-
-//Detail Order
-            DecimalFormat decimalFormat = new DecimalFormat("#,###");
-            decimalFormat.setGroupingSize(3);
-            decimalFormat.setGroupingUsed(true);
-            decimalFormat.setDecimalSeparatorAlwaysShown(false);
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
-            symbols.setGroupingSeparator('.');
-            decimalFormat.setDecimalFormatSymbols(symbols);
-
-            Hibernate.initialize(invoiceDTO.getTransactionDetails());
-            Flight flight = invoiceDTO.getTransactionDetails().get(0).getFlightClass().getFlightSchedule().getFlight();
-            Airline airline = flight.getAirplane().getAirline();
-            String departureAirport = flight.getDepartureAirport().getIata();
-            String arrivalAirport = flight.getArrivalAirport().getIata();
-
-            Map<String, Integer> transactionMap = invoiceDTO.getTransaction();
-            AtomicInteger number = new AtomicInteger(1);
-            List<BigDecimal> subTotal = new ArrayList<>();
-            for (int i = 0; i < invoiceDTO.getTransactionDetails().size(); i++) {
-                subTotal.add(invoiceDTO.getTransactionDetails().get(i).getTotalPriceAdult());
-                subTotal.add(invoiceDTO.getTransactionDetails().get(i).getTotalPriceChild());
-                subTotal.add(invoiceDTO.getTransactionDetails().get(i).getTotalPriceInfant());
-                transactionMap.forEach((key, value) -> {
-                    if (value > 0) {
-                        productTable.addCell(new Cell().add(new Paragraph(String.valueOf(number.get()))).setBorder(Border.NO_BORDER)
-                                .setTextAlignment(TextAlignment.RIGHT));
-                        productTable.addCell(new Cell().add(new Paragraph(key + " Ticket")).setBorder(Border.NO_BORDER)
-                                .setTextAlignment(TextAlignment.RIGHT));
-                        productTable.addCell(new Cell().add(new Paragraph(airline.getName() +
-                                " (" + departureAirport + " - " + arrivalAirport +
-                                ")")).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT));
-                        productTable.addCell(new Cell().add(new Paragraph(String.valueOf(value)))
-                                .setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT));
-                        productTable.addCell(new Cell().add(new Paragraph("IDR " + decimalFormat.format(subTotal.get(number.get() - 1))))
-                                .setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT));
-                        number.getAndIncrement();
-                    }
-                });
-            }
-
-// Add the product table to the document
-            document.add(productTable);
-
-            document.add(new LineSeparator(new SolidLine(0.5f)));
-
-            document.add(new Paragraph(""));
-
-            Table totalTable = new Table(UnitValue.createPointArray(new float[]{130, 130, 100, 140}));
-            totalTable.setWidth(UnitValue.createPercentValue(100)); // Set table width to 100% of the page width
-            Cell grandTotalLabelCell = new Cell().add(new Paragraph("Total Payment").setFont(boldFont))
-                    .setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
-            Cell grandTotalValueCell = new Cell().add(new Paragraph("IDR " + decimalFormat.format(invoiceDTO.getPayment().getGrossAmount()))
-                    .setFont(boldFont).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT));
-            totalTable.addCell(new Cell().add(new Paragraph(" ")).setBorder(Border.NO_BORDER));
-            totalTable.addCell(new Cell().add(new Paragraph(" ")).setBorder(Border.NO_BORDER));
-            totalTable.addCell(grandTotalLabelCell);
-            totalTable.addCell(grandTotalValueCell);
-// Add the total table to the document
-            document.add(totalTable);
+            fileCreation.generatePaymentProof(document, invoiceDTO);
         } catch (Exception e) {
             log.error("Error while generating invoice", e);
         }
-        log.info("generate invoice success");
+        log.info("generate payment proof success");
         request.setInvoice(fileName);
         return request;
     }
 
     @Transactional
     public InvoiceDTO getInvoiceDTO(Transaction request) {
+        log.info("get invoice");
         Optional<Transaction> checkDataDBTransaction = transactionRepository.findById(request.getId());
         if (!checkDataDBTransaction.isPresent()) {
+            log.error("get invoice error : transaction not found");
             throw new EntityNotFoundException("transaction not found");
         }
         Transaction transaction = checkDataDBTransaction.get();
         InvoiceDTO invoiceDTO = new InvoiceDTO();
-        invoiceDTO.setOrderer(transaction.getOrderer());
-        invoiceDTO.setPayment(transaction.getPayment());
+        invoiceDTO.setId(transaction.getId());
         invoiceDTO.setTransactionDetails(transaction.getTransactionDetails());
+        invoiceDTO.setPayment(transaction.getPayment());
+        invoiceDTO.setOrderer(transaction.getOrderer());
         Map<String, Integer> transactionMap = new LinkedHashMap<>();
         transactionMap.put("Adult", transaction.getAdultPassenger());
         transactionMap.put("Child", transaction.getChildPassenger());
@@ -723,126 +547,84 @@ public class TransactionImpl implements TransactionService {
         return invoiceDTO;
     }
 
+    @Transactional
+    public void saveETicket(Transaction request) {
+        log.info("Save New ETicket");
+        List<TransactionDetail> transactionDetails = request.getTransactionDetails();
+        List<ETicket> eTickets;
+        List<Passenger> passengers = request.getPassengers();
+        String fileName = "e-ticket-" + request.getId() + ".pdf";
+        String path = "e-ticket/" + fileName;
+        PdfWriter writer;
+        try {
+            writer = new PdfWriter(path);
+        } catch (FileNotFoundException e) {
+            log.error("ETicket File Path Not Found");
+            throw new FileHandlingException("ETicket File Path Not Found: " + e.getMessage());
+        }
+        PdfDocument pdf = new PdfDocument(writer);
+        AtomicInteger count = new AtomicInteger(0);
+        try (Document document = new Document(pdf, PageSize.A4)) {
+            eTickets = transactionDetails.stream()
+                    .map(transactionDetail -> {
+                        if (count.get() > 0) document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+                        ETicket eticket = new ETicket();
+                        eticket.setTransaction(request);
+                        eticket.setTransactionDetail(transactionDetail);
+                        eticket.setBookCode(simpleStringUtils.randomStringChar(6));
+                        ETicketDTO eticketDTO = eTicketRepository.getETicketDTO(transactionDetail.getId());
+                        eticketDTO.setPassengers(passengers);
+                        eticketDTO.setBookCode(eticket.getBookCode());
+                        fileCreation.generateETicket(document, eticketDTO);
+                        count.getAndIncrement();
+                        return eticket;
+                    }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("failed to save ETicket");
+            throw new FileHandlingException("ETicket File Failed to save: " + e);
+        }
+        if (eTickets.isEmpty()){
+            log.error("Failed to save E-Ticket");
+            throw new EntityNotFoundException("Failed to save E-Ticket");
+        }
+        request.setEticketFile(fileName);
+        request.setEtickets(eTickets);
+        log.info("ETicket Save Success");
+        transactionRepository.save(request);
+    }
 
-//    @Override
-//    public Map<Object, Object> getAllBank(int page, int size, String orderBy, String orderType) {
-//        try {
-//            log.info("get all bank");
-//            Pageable pageable = simpleStringUtils.getShort(orderBy, orderType, page, size);
-//            Specification<Bank> specification = ((root, criteriaQuery, criteriaBuilder) -> {
-//                List<Predicate> predicates = new ArrayList<>();
-//                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-//            });
-//            Page<Bank> list = bankRepository.findAll(specification, pageable);
-//            Map<Object, Object> map = new HashMap<>();
-//            map.put("data", list);
-//            log.info("get all bank succeed");
-//            return map;
-//
-//        } catch (Exception e) {
-//            log.error("get all bank error ", e);
-//            throw e;
-//        }
-//    }
-
-//    @Override
-//    public Map<Object, Object> savePayment(PaymentRegisterModel request) {
-//        try {
-//            log.info("save payment");
-//            Optional<Transaction> checkDataDBTransaction = transactionRepository.findById(request.getTransactionId());
-//            if (!checkDataDBTransaction.isPresent()) throw new EntityNotFoundException("transaction not found");
-//            Optional<Bank> checkDataDBBank = bankRepository.findById(request.getBankId());
-//            if (!checkDataDBBank.isPresent()) throw new EntityNotFoundException("bank not found");
-//            Payment payment = new Payment();
-//            payment.setBank(checkDataDBBank.get());
-//            payment.setTransaction(checkDataDBTransaction.get());
-//            log.info("save payment succeed");
-//            return templateResponse.success(paymentRepository.save(payment));
-//        } catch (Exception e) {
-//            log.error("save payment error ", e);
-//            throw e;
-//        }
-//    }
-
-//    @Override
-//    public Map<Object, Object> savePaymentProof(MultipartFile file, Long paymentId) throws IOException {
-//        ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-//        Long userId = (Long) attribute.getRequest().getAttribute("userId");
-//        Optional<User> checkDataDBUser = userRepository.findById(userId);
-//        log.info("Update User : " + userId);
-//        if (!checkDataDBUser.isPresent()) {
-//            throw new IncorrectUserCredentialException("unidentified token user");
-//        }
-//        Optional<Payment> checkDataDBPayment = paymentRepository.findById(paymentId);
-//        if (!checkDataDBPayment.isPresent()) throw new EntityNotFoundException("payment not found");
-//        Date date = new Date();
-//        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyhhmmss");
-//        String strDate = formatter.format(date);
-//
-//        String nameFormat= file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") );
-//        if(nameFormat.isEmpty()){
-//            nameFormat = ".png";
-//        }
-//        String userFolder = BASE_UPLOAD_FOLDER + "user_" + checkDataDBUser.get().getId() + "/";
-//        Path userFolderPath = Paths.get(userFolder);
-//        if (Files.notExists(userFolderPath)) {
-//            Files.createDirectories(userFolderPath);
-//        }
-//        String fileName = strDate + nameFormat;
-//        String filePath = userFolder + fileName;
-//        Path to = Paths.get(filePath);
-//        Map<Object, Object> map = new HashMap<>();
-//
-//        try {
-//            Files.copy(file.getInputStream(), to);
-//        } catch (Exception e) {
-//            log.error("Error while saving file", e);
-//            map.put("file name", fileName);
-//            map.put("file download uri", null);
-//            map.put("file type", file.getContentType());
-//            map.put("file size", file.getSize());
-//            map.put("status", e.getMessage());
-//            return map;
-//        }
-//        checkDataDBPayment.get().setPaymentProof(fileName);
-//        checkDataDBPayment.get().setStatus(PaymentStatus.PROCESSING);
-//        Object obj = paymentRepository.save(checkDataDBPayment.get());
-//
-//        map.put("file name", fileName);
-//        map.put("file download uri", null);
-//        map.put("file type", file.getContentType());
-//        map.put("file size", file.getSize());
-//        map.put("payment", obj);
-//        map.put("status", "success");
-//        return map;
-//    }
-//
-//    @Override
-//    public Resource getPaymentProof(Long paymentId) {
-//        try {
-//            log.info("get payment proof");
-//            ServletRequestAttributes attribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-//            Long userId = (Long) attribute.getRequest().getAttribute("userId");
-//            Optional<User> checkDataDBUser = userRepository.findById(userId);
-//            log.info("Update User : " + userId);
-//            if (!checkDataDBUser.isPresent()) {
-//                throw new IncorrectUserCredentialException("unidentified token user");
-//            }
-//            Optional<Payment> checkDataDBPayment = paymentRepository.findById(paymentId);
-//            if (!checkDataDBPayment.isPresent()) throw new EntityNotFoundException("payment not found");
-//            String userFolder = "user_" + checkDataDBPayment.get().getTransaction().getUser().getId() + "/";
-//            Path filePath = this.fileStorageLocation.resolve(userFolder + checkDataDBPayment.get().getPaymentProof()).normalize();
-//            Resource resource = new UrlResource(filePath.toUri());
-//            if (!resource.exists()) throw new FileStorageException("File not found " + filePath);
-//            else {
-//                log.info("get payment proof succeed");
-//                return resource;
-//            }
-//        } catch (MalformedURLException ex) {
-//            log.error("get payment proof error ", ex);
-//            throw new FileStorageException("File not found " ,ex);
-//        }
-//    }
+    @Override
+    public Resource getETicket(Long transactionId) {
+        log.info("Get ETicket");
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            Long userId = (Long) attributes.getRequest().getAttribute("userId");
+            Optional<User> checkDBUser = userRepository.findById(userId);
+            if (!checkDBUser.isPresent()) {
+                log.info("User Not Found");
+                throw new EntityNotFoundException("User Not Found");
+            }
+            Optional<Transaction> checkDBTransaction = transactionRepository.findById(transactionId);
+            if (!checkDBTransaction.isPresent() || checkDBTransaction.get().getUser().getId() != checkDBUser.get().getId()) {
+                log.info("Unauthorized Access");
+                throw new EntityNotFoundException("Transaction Not Found");
+            }
+            Path filePath = this.fileStorageLocation.get("eticket").resolve(checkDBTransaction.get().getEticketFile()).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                log.info("File Not Found");
+                throw new FileNotFoundException("File Not Found " + filePath);
+            } else {
+                log.info("ETicket Found");
+                return resource;
+            }
+        } catch (MalformedURLException e) {
+            log.error("get ETicket Error: " + e.getMessage());
+            throw new FileHandlingException("ETicket File Path Not Found ", e);
+        } catch (FileNotFoundException e) {
+            throw new FileHandlingException("ETicket File Not Found ", e);
+        }
+    }
 
 
 }

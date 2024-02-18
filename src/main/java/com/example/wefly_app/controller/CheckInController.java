@@ -2,6 +2,7 @@ package com.example.wefly_app.controller;
 
 import com.example.wefly_app.request.checkin.CheckinRequestModel;
 import com.example.wefly_app.service.CheckinService;
+import com.example.wefly_app.util.exception.FileHandlingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -32,11 +33,11 @@ public class CheckInController {
     @GetMapping("/getBoardingPass/{eticketId}")
     public ResponseEntity<Resource> getBoardingPass(@PathVariable("eticketId") Long eticketId, HttpServletRequest request) {
         Resource resource = checkinService.getBoardingPass(eticketId);
-        String contentType = null;
+        String contentType;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new FileHandlingException("Could not determine file type", e);
         }
         if (contentType == null) {
             contentType = "application/octet-stream";

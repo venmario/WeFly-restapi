@@ -82,4 +82,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(templateResponse.error(ex.getMessage(), 404), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(FileHandlingException.class)
+    public ResponseEntity<Object> handleFileHandlingException(FileHandlingException ex) {
+        return new ResponseEntity<>(templateResponse.error(ex.getMessage(), 404), HttpStatus.NOT_FOUND);
+    }
+
 }

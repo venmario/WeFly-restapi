@@ -1,18 +1,15 @@
 package com.example.wefly_app.test;
 
 import com.example.wefly_app.WeFlyApplication;
-import com.example.wefly_app.entity.*;
+import com.example.wefly_app.entity.BoardingPass;
+import com.example.wefly_app.entity.ETicket;
+import com.example.wefly_app.entity.Passenger;
+import com.example.wefly_app.entity.SeatAvailability;
 import com.example.wefly_app.repository.BoardingPassRepository;
 import com.example.wefly_app.repository.ETicketRepository;
-import com.example.wefly_app.repository.TransactionRepository;
 import com.example.wefly_app.request.checkin.BoardingPassDTO;
-import com.example.wefly_app.request.checkin.ETicketDTO;
-import com.example.wefly_app.request.transaction.InvoiceDTO;
-import com.example.wefly_app.service.impl.TransactionImpl;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
@@ -23,25 +20,19 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.*;
+import com.itextpdf.layout.properties.AreaBreakType;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalAlignment;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j

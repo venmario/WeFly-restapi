@@ -3,8 +3,10 @@ package com.example.wefly_app.controller;
 import com.example.wefly_app.request.transaction.MidtransResponseModel;
 import com.example.wefly_app.request.transaction.TransactionSaveModel;
 import com.example.wefly_app.service.CheckinService;
+import com.example.wefly_app.service.ReportService;
 import com.example.wefly_app.service.TransactionService;
 import com.example.wefly_app.service.impl.ReportServiceImpl;
+import com.example.wefly_app.util.exception.FileHandlingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -27,9 +29,7 @@ public class TransactionController {
     @Autowired
     public TransactionService transactionService;
     @Autowired
-    public ReportServiceImpl reportService;
-    @Autowired
-    public CheckinService checkinService;
+    public ReportService reportService;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping(value = {"/save", "/save/"})
@@ -73,12 +73,13 @@ public class TransactionController {
     @GetMapping(value = {"/getInvoice/{transactionId}", "/getInvoice/{transactionId}/"})
     public ResponseEntity<Resource> getInvoice(@PathVariable("transactionId") Long transactionId, HttpServletRequest request) {
         Resource resource = transactionService.getPaymentProof(transactionId);
-        String contentType = null;
+        String contentType;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
 
         } catch (IOException ex) {
-            log.info("Could not determine file type.");
+            log.error("Could not determine file type", ex);
+            throw new FileHandlingException("Could not determine file type", ex);
         }
         if (contentType == null) {
             contentType = "application/octet-stream";
@@ -89,15 +90,16 @@ public class TransactionController {
                 .body(resource);
     }
 
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping(value = {"/getETicket/{transactionId}", "/getETicket/{transactionId}/"})
     public ResponseEntity<Resource> getETicket(@PathVariable("transactionId") Long transactionId, HttpServletRequest request) {
-        Resource resource = checkinService.getETicket(transactionId);
+        Resource resource = transactionService.getETicket(transactionId);
         String contentType;
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Could not determine file type", e);
+            throw new FileHandlingException("Could not determine file type", e);
         }
         if (contentType == null) {
             contentType = "application/octet-stream";
@@ -126,41 +128,5 @@ public class TransactionController {
         return new ResponseEntity<>(transactionService.getEticketResponse(transactionId), HttpStatus.OK);
     }
 
-//    @GetMapping(value = {"/listBank", "/listBank/"})
-//    public ResponseEntity<Map> getAllBank(@RequestParam(required = true, defaultValue = "0") int page,
-//                                       @RequestParam(required = true, defaultValue = "10") int size,
-//                                       @RequestParam(required = false, defaultValue = "bankName") String orderBy,
-//                                       @RequestParam(required = false, defaultValue = "ascending") String orderType) {
-//        return new ResponseEntity<>(transactionService.getAllBank(page, size, orderBy, orderType), HttpStatus.OK);
-//    }
-//
-//    @PostMapping(value = {"/savePayment", "/savePayment/"})
-//    public ResponseEntity<Map> savePayment(@Valid @RequestBody PaymentRegisterModel request) {
-//        return new ResponseEntity<>(transactionService.savePayment(request), HttpStatus.OK);
-//    }
-//
-//    @PutMapping(value = {"/savePaymentProof/{paymentId}", "/savePaymentProof/{paymentId}/"})
-//    public ResponseEntity<Map> savePaymentProof(@RequestParam("file") MultipartFile file, @PathVariable("paymentId") Long paymentId) throws IOException {
-//            return new ResponseEntity<>(transactionService.savePaymentProof(file, paymentId), HttpStatus.OK);
-//    }
-//
-//    @GetMapping(value = {"/getPaymentProof/{paymentId}", "/getPaymentProof/{paymentId}/"})
-//    public ResponseEntity<Resource> getPaymentProof(@PathVariable("paymentId") Long paymentId, HttpServletRequest request) {
-//        Resource resource = transactionService.getPaymentProof(paymentId);
-//        String contentType = null;
-//        try {
-//            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-//
-//        } catch (IOException ex) {
-//            log.info("Could not determine file type.");
-//        }
-//        if (contentType == null) {
-//            contentType = "application/octet-stream";
-//        }
-//        return ResponseEntity.ok()
-//                .contentType(MediaType.parseMediaType(contentType))
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-//                .body(resource);
-//    }
 
 }

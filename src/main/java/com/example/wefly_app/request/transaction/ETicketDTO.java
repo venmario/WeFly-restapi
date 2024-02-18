@@ -1,10 +1,12 @@
-package com.example.wefly_app.request.checkin;
+package com.example.wefly_app.request.transaction;
 
+import com.example.wefly_app.entity.Passenger;
 import com.example.wefly_app.entity.enums.SeatClass;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 public class ETicketDTO {
@@ -24,6 +26,7 @@ public class ETicketDTO {
     private String arrivalProvince;
     private LocalTime departureTime;
     private LocalTime arrivalTime;
+    private List<Passenger> passengers;
 
     public ETicketDTO(LocalDate departureDate, LocalDate arrivalDate, String flightCode,
                       SeatClass seatClass, String airlineName, String departAirportName, String departIata,

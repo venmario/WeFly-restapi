@@ -19,7 +19,5 @@ public interface UserService {
     Map<Object, Object> delete(User request);
     Map<Object, Object> update(UpdateUserModel request);
     Map<Object, Object> getByIdUser();
-//    Map<Object, Object> getIdByUserName(String username);
-//    Map<Object, Object> getDetailProfile(Principal principal);
 }
 

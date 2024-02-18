@@ -3,9 +3,11 @@ package com.example.wefly_app.service.impl;
 import com.example.wefly_app.entity.Transaction;
 import com.example.wefly_app.repository.TransactionRepository;
 import com.example.wefly_app.request.transaction.ReportDTO;
+import com.example.wefly_app.service.ReportService;
 import com.example.wefly_app.util.SimpleStringUtils;
 import com.example.wefly_app.util.TemplateResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,10 +24,11 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ReportServiceImpl {
+public class ReportServiceImpl implements ReportService {
     private final TransactionRepository transactionRepository;
     private final SimpleStringUtils simpleStringUtils;
     private final TemplateResponse templateResponse;
+    @Autowired
     public ReportServiceImpl(TransactionRepository transactionRepository, SimpleStringUtils simpleStringUtils,
                              TemplateResponse templateResponse) {
         this.transactionRepository = transactionRepository;
@@ -33,6 +36,7 @@ public class ReportServiceImpl {
         this.templateResponse = templateResponse;
     }
 
+    @Override
     public Map<Object, Object> getReport(int page, int size, String orderBy, String orderType,
                                       String startDate, String endDate, String period) {
         try{

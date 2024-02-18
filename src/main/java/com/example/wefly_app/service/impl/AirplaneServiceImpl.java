@@ -26,14 +26,19 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AirplaneServiceImpl implements AirplaneService {
+    private final AirplaneRepository airplaneRepository;
+    private final TemplateResponse templateResponse;
+    private final SimpleStringUtils simpleStringUtils;
+    private final AirlineRepository airlineRepository;
+
     @Autowired
-    private AirplaneRepository airplaneRepository;
-    @Autowired
-    private TemplateResponse templateResponse;
-    @Autowired
-    private SimpleStringUtils simpleStringUtils;
-    @Autowired
-    private AirlineRepository airlineRepository;
+    public AirplaneServiceImpl(AirplaneRepository airplaneRepository, TemplateResponse templateResponse,
+                               SimpleStringUtils simpleStringUtils, AirlineRepository airlineRepository) {
+        this.airplaneRepository = airplaneRepository;
+        this.templateResponse = templateResponse;
+        this.simpleStringUtils = simpleStringUtils;
+        this.airlineRepository = airlineRepository;
+    }
 
     @Override
     public Map<Object, Object> save(AirplaneRegisterModel request) {

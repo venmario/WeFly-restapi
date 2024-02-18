@@ -39,46 +39,43 @@ import java.util.*;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    @Value("${BASEURL}")
-    private String baseUrl;
-    @Value("${frontend.email.activation}")
-    private String activationUrl;
-    @Value("${frontend.homepage.url}")
-    private String homePageUrl;
-    @Autowired
-    RoleRepository repoRole;
-    @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
+    private final String activationUrl;
+    private final String homePageUrl;
+    private final int expiredToken;
+    private final String authURL;
+    private final RoleRepository repoRole;
+    private final RestTemplateBuilder restTemplateBuilder;
+    private final PasswordEncoder encoder;
+    private final UserRepository userRepository;
+    private final EmailTemplate emailTemplate;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailSender emailSender;
+    private final SimpleStringUtils simpleStringUtils;
+    private final TemplateResponse templateResponse;
+    private final PasswordValidatorUtil passwordValidatorUtil;
 
     @Autowired
-    private PasswordEncoder encoder;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    public EmailTemplate emailTemplate;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public EmailSender emailSender;
-
-    @Autowired
-    public SimpleStringUtils simpleStringUtils;
-
-    @Value("${OTP_EXPIRED_TIME}")//FILE_SHOW_RUL
-    private int expiredToken;
-
-    @Value("${AUTHURL}")//FILE_SHOW_RUL
-    private String AUTHURL;
-
-    @Autowired
-    public TemplateResponse templateResponse;
-
-    @Autowired
-    public PasswordValidatorUtil passwordValidatorUtil = new PasswordValidatorUtil();
+    public UserServiceImpl(RoleRepository repoRole, RestTemplateBuilder restTemplateBuilder, PasswordEncoder encoder,
+                           UserRepository userRepository, EmailTemplate emailTemplate, PasswordEncoder passwordEncoder,
+                           EmailSender emailSender, SimpleStringUtils simpleStringUtils, TemplateResponse templateResponse,
+                           PasswordValidatorUtil passwordValidatorUtil, @Value("${frontend.email.activation}") String activationUrl,
+                           @Value("${frontend.homepage.url}") String homePageUrl, @Value("${OTP_EXPIRED_TIME}") int expiredToken,
+                             @Value("${AUTHURL}") String authURL) {
+        this.repoRole = repoRole;
+        this.restTemplateBuilder = restTemplateBuilder;
+        this.encoder = encoder;
+        this.userRepository = userRepository;
+        this.emailTemplate = emailTemplate;
+        this.passwordEncoder = passwordEncoder;
+        this.emailSender = emailSender;
+        this.simpleStringUtils = simpleStringUtils;
+        this.templateResponse = templateResponse;
+        this.passwordValidatorUtil = passwordValidatorUtil;
+        this.activationUrl = activationUrl;
+        this.homePageUrl = homePageUrl;
+        this.expiredToken = expiredToken;
+        this.authURL = authURL;
+    }
 
 
     @Override
@@ -439,7 +436,7 @@ public class UserServiceImpl implements UserService {
 
     public Map<String, Object> getToken(String email, String password) {
         log.info("Request token to spring server");
-        String url = AUTHURL + "?username=" + email +
+        String url = authURL + "?username=" + email +
                 "&password=" + password +
                 "&grant_type=password" +
                 "&client_id=my-client-web" +

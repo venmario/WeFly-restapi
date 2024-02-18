@@ -1,6 +1,5 @@
 package com.example.wefly_app.test.midtrans;
 
-import com.example.wefly_app.request.MidTransRequestDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpRequest;
