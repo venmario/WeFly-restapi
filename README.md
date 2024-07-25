@@ -64,6 +64,10 @@ mvn spring-boot:run
 
 This project is deployed using DigitalOcean. The live API can be accessed at [https://staging.wefly.my.id/api/v1](https://staging.wefly.my.id/api/v1) *(Inactive)*
 
+## ERD
+
+![ERD](./public/images/ERD.png)
+
 ## Contact
 
 For any questions or inquiries, please contact me at [andikatirta001@gmail.com](mailto:andikatirta001@gmail.com)
