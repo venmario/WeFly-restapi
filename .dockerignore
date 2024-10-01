@@ -43,6 +43,12 @@ boarding-pass/
 docker/
 e-ticket/
 payment-proof/
+boarding-pass/*
+docker/
+e-ticket/
+e-ticket/*
+payment-proof/
+payment-proof/*
 Postman Collections/
 public/
 LICENSE
