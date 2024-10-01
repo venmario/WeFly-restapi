@@ -39,12 +39,12 @@ nbdist
 fly.toml
 .github
 .mvn
-boarding-pass/
-docker/
-e-ticket/
-payment-proof/
-Postman Collections/
-public/
+boarding-pass\
+docker\
+e-ticket\
+payment-proof\
+Postman Collections\
+public\
 LICENSE
 Dockerfile
 README.md
