@@ -1,16 +1,12 @@
 # Use a base image with Java
-FROM eclipse-temurin:17-jdk-alpine
+FROM maven:3.8.6-eclipse-temurin-17-alpine
 # Copy the built jar file into the image
 
-RUN #mkdir /app
-RUN mkdir database_seeder
-RUN mkdir properties
+WORKDIR /app
 
-COPY database_seeder/* /database_seeder
-COPY properties/* /properties
-COPY target/*.jar /app.jar
+COPY . ./
 
-#WORKDIR /app
+RUN mvn package -DskipTests
 
 # Set the entry point to run your application
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-jar","target/WeFly_App_Final_Project.jar"]

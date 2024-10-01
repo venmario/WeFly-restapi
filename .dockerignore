@@ -1,6 +1,8 @@
 # flyctl launch added from .gitignore
 **\HELP.md
 !**\.mvn\wrapper\maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
 ### STS ###
 **\.apt_generated
@@ -35,3 +37,16 @@ nbdist
 .idea\shelf
 .idea\workspace.xml
 fly.toml
+.github
+.mvn
+boarding-pass/
+docker/
+e-ticket/
+payment-proof/
+Postman Collections/
+public/
+LICENSE
+Dockerfile
+README.md
+mvnw
+mvnw.cmd
