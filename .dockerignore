@@ -39,12 +39,9 @@ nbdist
 fly.toml
 .github
 .mvn
+docker/
 boarding-pass/
-docker/
-e-ticket/
-payment-proof/
 boarding-pass/*
-docker/
 e-ticket/
 e-ticket/*
 payment-proof/
